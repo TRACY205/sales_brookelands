@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+{% block title %}User Dashboard{% endblock %}
+
+{% block content %}
+
+<style>
+  .dashboard-container {
+    max-width: 900px;
+    margin: 30px auto;
+    padding: 20px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  .dashboard-container h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+  }
+  .message {
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+  }
+  .message.success {
+    background-color: #ddffdd;
+    color: #3c763d;
+    border: 1px solid #3c763d;
+  }
+  .message.error {
+    background-color: #ffdddd;
+    color: #a94442;
+    border: 1px solid #a94442;
+  }
+  .top-links {
+    text-align: right;
+    margin-bottom: 20px;
+  }
+  .top-links a {
+    margin-left: 10px;
+    text-decoration: none;
+    font-weight: 500;
+  }
+  .top-links a.register { color: #007BFF; }
+  .top-links a.logout { color: #d9534f; }
+
+  .order-form {
+    padding: 20px;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    background: #fafafa;
+    margin-bottom: 30px;
+  }
+  .order-form h3 {
+    margin-bottom: 15px;
+    color: #444;
+  }
+  .order-form label {
+    font-weight: 500;
+  }
+  .order-form input,
+  .order-form select {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    margin-bottom: 15px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+  }
+  .order-form button {
+    width: 100%;
+    padding: 12px;
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .order-form button:hover {
+    background: #218838;
+  }
+
+  .orders-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #ddd;
+  }
+  .orders-table th,
+  .orders-table td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: left;
+  }
+  .orders-table th {
+    background: #f2f2f2;
+  }
+  .orders-table .empty {
+    text-align: center;
+    padding: 15px;
+    color: #777;
+  }
+</style>
+
+<div class="dashboard-container">
+
+  <h2>Welcome, {{ user.username }}</h2>
+
+  <!-- Messages -->
+  {% if messages %}
+    {% for message in messages %}
+      <div class="message {% if message.tags == 'error' %}error{% else %}success{% endif %}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <p class="top-links">
+    <a href="{% url 'register' %}" class="register">➕ Register a new user</a> | 
+    <a href="{% url 'logout' %}" class="logout">🚪 Logout</a>
+  </p>
+
+  <!-- Order Form -->
+  <div class="order-form">
+    <h3>📦 Submit New Order</h3>
+    <form method="post">
+      {% csrf_token %}
+      
+      <label>Category</label>
+      <select id="category" name="category" required>
+        <option value="">--Select Category--</option>
+        <option value="Water">Water</option>
+        <option value="Bottle">Bottle</option>
+      </select>
+
+      <label>Item</label>
+      <select id="item" name="item" required>
+        <option value="">--Select Item--</option>
+      </select>
+
+      <label>Quantity</label>
+      <input type="number" name="quantity" min="1" required>
+
+      <label>Price</label>
+      <input type="number" name="price" min="0" step="0.01" required>
+
+      <button type="submit">✅ Submit Order</button>
+    </form>
+  </div>
+
+  <!-- Orders Table -->
+  <h3>📋 Your Previous Orders</h3>
+  <table class="orders-table">
+    <tr>
+      <th>ID</th>
+      <th>Category</th>
+      <th>Item</th>
+      <th>Quantity</th>
+      <th>Price</th>
+      <th>Date</th>
+    </tr>
+    {% for sale in sales %}
+    <tr>
+      <td>{{ sale.id }}</td>
+      <td>{{ sale.category }}</td>
+      <td>{{ sale.item }}</td>
+      <td>{{ sale.quantity }}</td>
+      <td>{{ sale.price }}</td>
+      <td>{{ sale.date|date:"Y-m-d H:i" }}</td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="6" class="empty">No orders yet.</td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+
+<script>
+const waterItems = ["20L","10L","5L","1L","1L Pack","500ML Pack"];
+const bottleItems = ["20L Bottle","10L Bottle","5L Bottle"];
+
+document.getElementById("category").addEventListener("change", function() {
+    const category = this.value;
+    const itemSelect = document.getElementById("item");
+    itemSelect.innerHTML = "<option value=''>--Select Item--</option>";
+    let items = [];
+    if(category === "Water") items = waterItems;
+    else if(category === "Bottle") items = bottleItems;
+    items.forEach(i => {
+        const opt = document.createElement("option");
+        opt.value = i;
+        opt.text = i;
+        itemSelect.appendChild(opt);
+    });
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Sale</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .form-container {
+            max-width: 500px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        .form-container h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #007bff;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h2>Record a Sale</h2>
+        <form method="post">
+            {% csrf_token %}
+            <label>Category</label>
+            <select name="category" required>
+                <option value="">-- Select Category --</option>
+                <option value="Water">Water</option>
+                <option value="Soft Drink">Soft Drink</option>
+                <option value="Other">Other</option>
+            </select>
+
+            <label>Item</label>
+            <input type="text" name="item" placeholder="e.g. 20L Bottle" required>
+
+            <label>Quantity</label>
+            <input type="number" name="quantity" min="1" required>
+
+            <label>Price</label>
+            <input type="number" step="0.01" name="price" required>
+
+            <button type="submit">Save Sale</button>
+        </form>
+    </div>
+</body>
+</html>

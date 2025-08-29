@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Welcome{% endblock %}
+
+{% block content %}
+<div style="max-width: 500px; margin: 100px auto; text-align: center;">
+    <h1>Welcome to Sales Brookelands System</h1>
+    <p>Please choose your dashboard:</p>
+
+    <div style="margin-top: 30px;">
+        <a href="{% url 'login' %}?type=user" 
+           style="padding: 15px 30px; background-color:#4CAF50; color:white; border-radius:5px; text-decoration:none; margin-right:20px;">
+            User Dashboard
+        </a>
+
+        <a href="{% url 'login' %}?type=admin" 
+           style="padding: 15px 30px; background-color:#2196F3; color:white; border-radius:5px; text-decoration:none;">
+            Admin Dashboard
+        </a>
+    </div>
+</div>
+{% endblock %}

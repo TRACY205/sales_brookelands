@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Sales Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 30px;
+            color: #333;
+        }
+
+        h2 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th {
+            background-color: #3498db;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+            font-size: 13px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        /* Footer summary row */
+        tfoot td {
+            font-weight: bold;
+            background-color: #ecf0f1;
+        }
+    </style>
+</head>
+<body>
+    <h2>💧 Sales Report</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>User</th>
+                <th>Category</th>
+                <th>Item</th>
+                <th>Qty</th>
+                <th>Price (KSh)</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sale in sales %}
+            <tr>
+                <td>{{ sale.id }}</td>
+                <td>{{ sale.user.username }}</td>
+                <td>{{ sale.category }}</td>
+                <td>{{ sale.item }}</td>
+                <td>{{ sale.quantity }}</td>
+                <td>KSh {{ sale.price|floatformat:2 }}</td>
+                <td>{{ sale.date|date:"d M Y" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="5">Total Records</td>
+                <td colspan="2">{{ sales|length }}</td>
+            </tr>
+            <tr>
+                <td colspan="5">Total Amount</td>
+                <td colspan="2">KSh {{ total_amount|floatformat:2 }}</td>
+            </tr>
+        </tfoot>
+    </table>
+</body>
+</html>
+

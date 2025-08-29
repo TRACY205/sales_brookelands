@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Register{% endblock %}
+
+{% block content %}
+<style>
+/* Container */
+.register-container {
+    max-width: 400px;
+    margin: 80px auto;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    background-color: #fff;
+}
+
+/* Headings */
+.register-container h2 {
+    margin-bottom: 20px;
+}
+
+/* Input fields */
+.register-input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+}
+
+/* Submit button */
+.register-button {
+    width: 100%;
+    padding: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.register-button:hover {
+    background-color: #45a049;
+}
+
+/* Messages */
+.message {
+    margin-bottom: 15px;
+    font-size: 0.95em;
+    text-align: left;
+}
+
+.message.error {
+    color: red;
+}
+
+.message.success {
+    color: green;
+}
+
+/* Links */
+.register-container p a {
+    text-decoration: none;
+    color: #4CAF50;
+}
+</style>
+
+<div class="register-container">
+    <h2>Create Account</h2>
+
+    {% if messages %}
+        {% for message in messages %}
+            <p class="message {% if message.tags %}{{ message.tags }}{% endif %}">{{ message }}</p>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        <input type="text" name="username" class="register-input" placeholder="Username" required>
+        <input type="password" name="password1" class="register-input" placeholder="Password" required>
+        <input type="password" name="password2" class="register-input" placeholder="Confirm Password" required>
+        <button type="submit" class="register-button">Register</button>
+    </form>
+
+    <p style="margin-top:15px;">Already have an account? <a href="{% url 'login' %}?type=user">Login here</a></p>
+</div>
+{% endblock %}
+

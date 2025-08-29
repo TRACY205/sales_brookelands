@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<style>
+/* Container */
+.login-container {
+    max-width: 400px;
+    margin: 80px auto;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    background-color: #fff;
+}
+
+/* Headings */
+.login-container h2 {
+    margin-bottom: 20px;
+}
+
+/* Input fields */
+.login-input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+}
+
+/* Submit button */
+.login-button {
+    width: 100%;
+    padding: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+/* Hover effect */
+.login-button:hover {
+    background-color: #45a049;
+}
+
+/* Messages */
+.message {
+    margin-bottom: 15px;
+    font-size: 0.95em;
+    text-align: left;
+}
+
+.message.error {
+    color: red;
+}
+
+.message.success {
+    color: green;
+}
+
+/* Links */
+.login-container p a {
+    text-decoration: none;
+    color: #4CAF50;
+}
+</style>
+
+<div class="login-container">
+    <h2>Login</h2>
+
+    <!-- Display Django messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <p class="message {% if message.tags %}{{ message.tags }}{% endif %}">
+                {{ message }}
+            </p>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Login form -->
+    <form method="post">
+        {% csrf_token %}
+        <input type="text" name="username" class="login-input" placeholder="Username" required>
+        <input type="password" name="password" class="login-input" placeholder="Password" required>
+
+        <!-- Hidden field to track dashboard type -->
+        <input type="hidden" name="dashboard_type" value="{{ request.GET.type|default:'' }}">
+
+        <button type="submit" class="login-button">Login</button>
+    </form>
+
+    <!-- New user link (only on user login) -->
+    {% if request.GET.type == 'user' %}
+        <p style="margin-top:15px;">New user? <a href="{% url 'register' %}">Register here</a></p>
+    {% endif %}
+
+    <p style="margin-top:10px;"><a href="{% url 'landing' %}">Back to Landing Page</a></p>
+</div>
+{% endblock %}
