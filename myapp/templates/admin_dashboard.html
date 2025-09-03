@@ -13,9 +13,9 @@
             <th>Category</th>
             <th>Item</th>
             <th>Quantity</th>
-            <th>Price</th>
+            <th>Price (KSh)</th>
             <th>Date</th>
-            <th>Payment Method</th>   <!-- ✅ Added -->
+            <th>Payment Method</th>
         </tr>
     </thead>
     <tbody>
@@ -26,9 +26,11 @@
             <td>{{ sale.category }}</td>
             <td>{{ sale.item }}</td>
             <td>{{ sale.quantity }}</td>
-            <td>{{ sale.price }}</td>
-            <td>{{ sale.date|date:"Y-m-d H:i" }}</td>
-            <td>{{ sale.payment_method }}</td>   <!-- ✅ Added -->
+            <!-- ✅ Show as whole number -->
+            <td>KSh {{ sale.price|floatformat:0 }}</td>
+            <!-- ✅ Format date as dd/mm/yy -->
+            <td>{{ sale.date|date:"d/m/y" }}</td>
+            <td>{{ sale.payment_method }}</td>
         </tr>
         {% empty %}
         <tr>
