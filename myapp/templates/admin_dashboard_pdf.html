@@ -42,7 +42,8 @@
                 <th>Category</th>
                 <th>Item</th>
                 <th>Qty</th>
-                <th>Price (KSh)</th>
+                <th>Unit Price (KSh)</th>
+                <th>Total (KSh)</th>
                 <th>Date</th>
             </tr>
         </thead>
@@ -55,18 +56,19 @@
                 <td>{{ sale.item }}</td>
                 <td>{{ sale.quantity }}</td>
                 <td>{{ sale.price }}</td>
-                <td>{{ sale.date }}</td>
+                <td>{{ sale.total_price }}</td>  {# ✅ uses annotation from views.py #}
+                <td>{{ sale.date|date:"Y-m-d H:i" }}</td>
             </tr>
             {% empty %}
             <tr>
-                <td colspan="7">No sales available.</td>
+                <td colspan="8">No sales available.</td>
             </tr>
             {% endfor %}
         </tbody>
         <tfoot>
             <tr>
-                <td colspan="5">Total Records</td>
-                <td colspan="2">{{ sales|length }}</td>
+                <td colspan="6">Total Sales (KSh)</td>
+                <td colspan="2">{{ total_amount }}</td>
             </tr>
         </tfoot>
     </table>

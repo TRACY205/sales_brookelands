@@ -62,7 +62,8 @@
                 <th>Category</th>
                 <th>Item</th>
                 <th>Qty</th>
-                <th>Price (KSh)</th>
+                <th>Unit Price (KSh)</th>
+                <th>Total (KSh)</th>
                 <th>Date</th>
             </tr>
         </thead>
@@ -75,21 +76,21 @@
                 <td>{{ sale.item }}</td>
                 <td>{{ sale.quantity }}</td>
                 <td>KSh {{ sale.price|floatformat:2 }}</td>
+                <td>KSh {{ sale.total_price|floatformat:2 }}</td>  {# ✅ new #}
                 <td>{{ sale.date|date:"d M Y" }}</td>
             </tr>
             {% endfor %}
         </tbody>
         <tfoot>
             <tr>
-                <td colspan="5">Total Records</td>
+                <td colspan="6">Total Records</td>
                 <td colspan="2">{{ sales|length }}</td>
             </tr>
             <tr>
-                <td colspan="5">Total Amount</td>
+                <td colspan="6">Total Amount</td>
                 <td colspan="2">KSh {{ total_amount|floatformat:2 }}</td>
             </tr>
         </tfoot>
     </table>
 </body>
 </html>
-

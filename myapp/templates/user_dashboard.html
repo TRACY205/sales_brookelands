@@ -142,7 +142,9 @@
       <input type="number" name="quantity" min="1" required>
 
       <label>Price</label>
-      <input type="number" name="price" min="0" step="0.01" required>
+      <select id="price" name="price" required>
+        <option value="">--Select Price--</option>
+      </select>
 
       <button type="submit">✅ Submit Order</button>
     </form>
@@ -177,22 +179,57 @@
 </div>
 
 <script>
-const waterItems = ["20L","10L","5L","1L","1L Pack","500ML Pack"];
-const bottleItems = ["20L Bottle","10L Bottle","5L Bottle"];
+const itemsWithPrices = {
+  "Water": {
+    "1L": 30,
+    "1L (Refill)": 10,
+    "5L (Refill)": 70,
+    "5L + Bottle": 150,
+    "10L (Refill)": 30,
+    "10L + Bottle": 250,
+    "20L (Refill)": 250,
+    "20L + Bottle": 500,
+    "20L (Hard) + Water": 1500
+  },
+  "Bottle": {
+    "20L Bottle": 0, 
+    "10L Bottle": 0,
+    "5L Bottle": 0
+  }
+};
 
 document.getElementById("category").addEventListener("change", function() {
     const category = this.value;
     const itemSelect = document.getElementById("item");
+    const priceSelect = document.getElementById("price");
+
     itemSelect.innerHTML = "<option value=''>--Select Item--</option>";
-    let items = [];
-    if(category === "Water") items = waterItems;
-    else if(category === "Bottle") items = bottleItems;
-    items.forEach(i => {
+    priceSelect.innerHTML = "<option value=''>--Select Price--</option>";
+
+    if (itemsWithPrices[category]) {
+        Object.keys(itemsWithPrices[category]).forEach(item => {
+            const opt = document.createElement("option");
+            opt.value = item;
+            opt.text = item;
+            itemSelect.appendChild(opt);
+        });
+    }
+});
+
+document.getElementById("item").addEventListener("change", function() {
+    const category = document.getElementById("category").value;
+    const item = this.value;
+    const priceSelect = document.getElementById("price");
+
+    priceSelect.innerHTML = "<option value=''>--Select Price--</option>";
+
+    if (itemsWithPrices[category] && itemsWithPrices[category][item] !== undefined) {
         const opt = document.createElement("option");
-        opt.value = i;
-        opt.text = i;
-        itemSelect.appendChild(opt);
-    });
+        opt.value = itemsWithPrices[category][item];
+        opt.text = itemsWithPrices[category][item] + " KSh";
+        opt.selected = true;  // auto-select
+        priceSelect.appendChild(opt);
+    }
 });
 </script>
 
