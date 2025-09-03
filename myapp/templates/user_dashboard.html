@@ -142,9 +142,7 @@
       <input type="number" name="quantity" min="1" required>
 
       <label>Price</label>
-      <select id="price" name="price" required>
-        <option value="">--Select Price--</option>
-      </select>
+      <input type="text" id="price" name="price" readonly required>
 
       <button type="submit">✅ Submit Order</button>
     </form>
@@ -201,10 +199,10 @@ const itemsWithPrices = {
 document.getElementById("category").addEventListener("change", function() {
     const category = this.value;
     const itemSelect = document.getElementById("item");
-    const priceSelect = document.getElementById("price");
+    const priceInput = document.getElementById("price");
 
     itemSelect.innerHTML = "<option value=''>--Select Item--</option>";
-    priceSelect.innerHTML = "<option value=''>--Select Price--</option>";
+    priceInput.value = "";
 
     if (itemsWithPrices[category]) {
         Object.keys(itemsWithPrices[category]).forEach(item => {
@@ -219,16 +217,12 @@ document.getElementById("category").addEventListener("change", function() {
 document.getElementById("item").addEventListener("change", function() {
     const category = document.getElementById("category").value;
     const item = this.value;
-    const priceSelect = document.getElementById("price");
-
-    priceSelect.innerHTML = "<option value=''>--Select Price--</option>";
+    const priceInput = document.getElementById("price");
 
     if (itemsWithPrices[category] && itemsWithPrices[category][item] !== undefined) {
-        const opt = document.createElement("option");
-        opt.value = itemsWithPrices[category][item];
-        opt.text = itemsWithPrices[category][item] + " KSh";
-        opt.selected = true;  // auto-select
-        priceSelect.appendChild(opt);
+        priceInput.value = itemsWithPrices[category][item];
+    } else {
+        priceInput.value = "";
     }
 });
 </script>
