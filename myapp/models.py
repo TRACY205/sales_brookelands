@@ -7,7 +7,9 @@ class Sale(models.Model):
     item = models.CharField(max_length=100)
     quantity = models.IntegerField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
+    payment_method = models.CharField(max_length=50, default="Cash")  # ✅ NEW FIELD
     date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.item} - {self.quantity}"
+        return f"{self.item} - {self.quantity} ({self.payment_method})"
+

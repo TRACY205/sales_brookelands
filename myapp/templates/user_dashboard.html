@@ -152,11 +152,11 @@
       <label>Total Price</label>
       <input type="text" id="price" name="price" readonly required>
 
-      <!-- ✅ Payment Method -->
+      <!-- ✅ Payment Method (radio instead of checkbox) -->
       <label>Payment Method</label>
       <div class="payment-options">
-        <label><input type="checkbox" name="payment_method" value="Cash"> Cash</label>
-        <label><input type="checkbox" name="payment_method" value="MPesa"> MPesa</label>
+        <label><input type="radio" name="payment_method" value="Cash" required> Cash</label>
+        <label><input type="radio" name="payment_method" value="MPesa" required> MPesa</label>
       </div>
 
       <button type="submit">✅ Submit Order</button>
@@ -262,10 +262,9 @@ function validateForm() {
     return false;
   }
 
-  // Check if payment selected
-  const payments = document.querySelectorAll('input[name="payment_method"]:checked');
-  if (payments.length === 0) {
-    alert("⚠️ Please select at least one payment method.");
+  const payment = document.querySelector('input[name="payment_method"]:checked');
+  if (!payment) {
+    alert("⚠️ Please select a payment method.");
     return false;
   }
 
@@ -274,3 +273,4 @@ function validateForm() {
 </script>
 
 {% endblock %}
+

@@ -72,12 +72,11 @@ def logout_view(request):
     return redirect("landing")
 
 
-from django.shortcuts import render, redirect
-from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from .models import Sale
 
-# ✅ Price list dictionary
+# ✅ price dictionary
 PRICE_LIST = {
     "1L + B": 30,
     "1L (Refill)": 10,
@@ -99,21 +98,23 @@ def user_dashboard(request):
         category = request.POST.get("category")
         item = request.POST.get("item")
         quantity = request.POST.get("quantity")
+        payment_method = request.POST.get("payment_method")  # ✅ Get payment method
 
         try:
             quantity = int(quantity)
         except:
             quantity = 0
 
-        unit_price = PRICE_LIST.get(item)   # ✅ lookup item price
+        unit_price = PRICE_LIST.get(item)
 
-        if category and item and quantity > 0 and unit_price is not None:
+        if category and item and quantity > 0 and unit_price is not None and payment_method:
             Sale.objects.create(
                 user=request.user,
                 category=category,
                 item=item,
                 quantity=quantity,
-                price=quantity * unit_price  # ✅ total price stored
+                price=quantity * unit_price,  # ✅ total price
+                payment_method=payment_method  # ✅ save payment
             )
             messages.success(request, "✅ Order submitted successfully!")
             return redirect("user_dashboard")
@@ -122,6 +123,7 @@ def user_dashboard(request):
 
     sales = Sale.objects.filter(user=request.user).order_by("-date")
     return render(request, "user_dashboard.html", {"sales": sales})
+
 
 # --------------------------
 # Admin dashboard
