@@ -111,11 +111,9 @@
 
 <div class="dashboard-container">
 
-  <!-- Company Name -->
   <h2>Brookelands Water and Gas</h2>
   <h3>Welcome, {{ user.username }}</h3>
 
-  <!-- Messages -->
   {% if messages %}
     {% for message in messages %}
       <div class="message {% if message.tags == 'error' %}error{% else %}success{% endif %}">
@@ -129,7 +127,6 @@
     <a href="{% url 'logout' %}" class="logout">🚪 Logout</a>
   </p>
 
-  <!-- Order Form -->
   <div class="order-form">
     <h3>📦 Submit New Order</h3>
     <form method="post" onsubmit="return validateForm()">
@@ -139,7 +136,7 @@
       <select id="category" name="category" required>
         <option value="">--Select Category--</option>
         <option value="Water">Water</option>
-        <option value="Bottle">Bottle</option>
+        <option value="Gas">Gas</option>
       </select>
 
       <label>Item</label>
@@ -153,7 +150,6 @@
       <label>Total Price</label>
       <input type="text" id="price" name="price" readonly required>
 
-      <!-- Payment Method -->
       <label>Payment Method</label>
       <div class="payment-options">
         <label><input type="radio" name="payment_method" value="Cash" required> Cash</label>
@@ -164,7 +160,6 @@
     </form>
   </div>
 
-  <!-- Orders Table -->
   <h3>📋 Your Previous Orders</h3>
   <table class="orders-table">
     <tr>
@@ -207,10 +202,19 @@ const itemsWithPrices = {
     "20L + Bottle": 500,
     "20L (Hard) + Water": 1500
   },
-  "Bottle": {
-    "20L Bottle": 0, 
-    "10L Bottle": 0,
-    "5L Bottle": 0
+  "Gas": {
+    "Insta Gas 6kg": 1000,
+    "Insta Gas 12kg": 3500,
+    "Pro Gas 6kg": 1000,
+    "Pro Gas 12kg": 3500,
+    "Wajiko 6kg": 1000,
+    "Wajiko 12kg": 3500,
+    "K Gas 6kg": 1000,
+    "K Gas 12kg": 3500,
+    "Afri Gas 6kg": 1000,
+    "Afri Gas 12kg": 3500,
+    "Total Gas 6kg": 1000,
+    "Total Gas 12kg": 3500
   }
 };
 

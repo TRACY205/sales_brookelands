@@ -26,9 +26,9 @@
             <td>{{ sale.category }}</td>
             <td>{{ sale.item }}</td>
             <td>{{ sale.quantity }}</td>
-            <!-- ✅ Show as whole number -->
+            <!-- Show price as whole number -->
             <td>KSh {{ sale.price|floatformat:0 }}</td>
-            <!-- ✅ Format date as dd/mm/yy -->
+            <!-- Format date as dd/mm/yy -->
             <td>{{ sale.date|date:"d/m/y" }}</td>
             <td>{{ sale.payment_method }}</td>
         </tr>

@@ -72,6 +72,9 @@ def logout_view(request):
     return redirect("landing")
 
 
+# --------------------------
+# User dashboard
+# --------------------------
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .models import Sale
@@ -113,7 +116,7 @@ def user_dashboard(request):
                 category=category,
                 item=item,
                 quantity=quantity,
-                price=quantity * unit_price,  # ✅ total price
+                price=unit_price,          # store unit price
                 payment_method=payment_method  # ✅ save payment
             )
             messages.success(request, "✅ Order submitted successfully!")
@@ -149,11 +152,9 @@ def admin_dashboard(request):
 # Admin PDF report
 # --------------------------
 @login_required
-
-
 def admin_dashboard_pdf(request):
     sales = Sale.objects.all()
-    total_amount = sum(sale.price for sale in sales)
+    total_amount = sum(sale.price * sale.quantity for sale in sales)  # ✅ multiply price by quantity
     template_path = 'admin_dashboard_pdf.html'
     context = {'sales': sales, 'total_amount': total_amount}
     
@@ -178,19 +179,26 @@ def add_sale(request):
         category = request.POST.get("category")
         item = request.POST.get("item")
         quantity = request.POST.get("quantity")
+        payment_method = request.POST.get("payment_method")  # ✅ add payment method
 
-        # ✅ Secure price
-        price = price.get(item)
+        try:
+            quantity = int(quantity)
+        except:
+            quantity = 0
 
-        if category and item and quantity and price:
+        unit_price = PRICE_LIST.get(item)
+
+        if category and item and quantity > 0 and unit_price is not None and payment_method:
             Sale.objects.create(
                 user=request.user,
                 category=category,
                 item=item,
-                quantity=int(quantity),
-                price=price,
+                quantity=quantity,
+                price=unit_price,          # store unit price
+                payment_method=payment_method
             )
             return redirect("user_dashboard")
 
-    return render(request, "add_sale.html", {"PRICE_LIST": price})
+    return render(request, "add_sale.html", {"PRICE_LIST": PRICE_LIST})
+
 
