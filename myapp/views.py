@@ -75,12 +75,15 @@ def logout_view(request):
 # --------------------------
 # User dashboard
 # --------------------------
+# myapp/views.py
+from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .models import Sale
 
-# ✅ price dictionary
+# ✅ Full PRICE LIST including Water and Gas
 PRICE_LIST = {
+    # Water
     "1L + B": 30,
     "1L (Refill)": 10,
     "5L (Refill)": 70,
@@ -90,9 +93,20 @@ PRICE_LIST = {
     "20L (Refill)": 250,
     "20L + Bottle": 500,
     "20L (Hard) + Water": 1500,
-    "20L Bottle": 0,
-    "10L Bottle": 0,
-    "5L Bottle": 0,
+
+    # Gas
+    "Insta Gas 6kg": 1000,
+    "Insta Gas 12kg": 3500,
+    "Pro Gas 6kg": 1000,
+    "Pro Gas 12kg": 3500,
+    "Wajiko 6kg": 1000,
+    "Wajiko 12kg": 3500,
+    "K Gas 6kg": 1000,
+    "K Gas 12kg": 3500,
+    "Afri Gas 6kg": 1000,
+    "Afri Gas 12kg": 3500,
+    "Total Gas 6kg": 1000,
+    "Total Gas 12kg": 3500,
 }
 
 @login_required
@@ -100,30 +114,39 @@ def user_dashboard(request):
     if request.method == "POST":
         category = request.POST.get("category")
         item = request.POST.get("item")
-        quantity = request.POST.get("quantity")
-        payment_method = request.POST.get("payment_method")  # ✅ Get payment method
+        payment_method = request.POST.get("payment_method")
 
+        # Convert quantity safely
         try:
-            quantity = int(quantity)
-        except:
+            quantity = int(request.POST.get("quantity"))
+        except (TypeError, ValueError):
             quantity = 0
 
+        # Get unit price from full PRICE_LIST
         unit_price = PRICE_LIST.get(item)
 
-        if category and item and quantity > 0 and unit_price is not None and payment_method:
-            Sale.objects.create(
-                user=request.user,
-                category=category,
-                item=item,
-                quantity=quantity,
-                price=unit_price,          # store unit price
-                payment_method=payment_method  # ✅ save payment
-            )
-            messages.success(request, "✅ Order submitted successfully!")
-            return redirect("user_dashboard")
-        else:
+        # Validate all fields
+        if not category or not item or quantity <= 0 or unit_price is None or not payment_method:
             messages.error(request, "⚠️ Please fill all fields correctly.")
+            return redirect("user_dashboard")
 
+        # Calculate total price
+        total_price = unit_price * quantity
+
+        # Create Sale
+        Sale.objects.create(
+            user=request.user,
+            category=category,
+            item=item,
+            quantity=quantity,
+            price=total_price,
+            payment_method=payment_method
+        )
+
+        messages.success(request, "✅ Order submitted successfully!")
+        return redirect("user_dashboard")
+
+    # Display all user sales
     sales = Sale.objects.filter(user=request.user).order_by("-date")
     return render(request, "user_dashboard.html", {"sales": sales})
 
