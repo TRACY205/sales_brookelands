@@ -55,9 +55,11 @@
                 <td>{{ sale.category }}</td>
                 <td>{{ sale.item }}</td>
                 <td>{{ sale.quantity }}</td>
-                <td>{{ sale.price }}</td>
-                <td>{{ sale.total_price }}</td>  {# ✅ uses annotation from views.py #}
-                <td>{{ sale.date|date:"Y-m-d H:i" }}</td>
+                <!-- ✅ show prices as whole numbers -->
+                <td>{{ sale.price|floatformat:0 }}</td>
+                <td>{{ sale.total_price|floatformat:0 }}</td>
+                <!-- ✅ show date in dd/mm/yy format -->
+                <td>{{ sale.date|date:"d/m/y" }}</td>
             </tr>
             {% empty %}
             <tr>
@@ -68,9 +70,10 @@
         <tfoot>
             <tr>
                 <td colspan="6">Total Sales (KSh)</td>
-                <td colspan="2">{{ total_amount }}</td>
+                <td colspan="2">{{ total_amount|floatformat:0 }}</td>
             </tr>
         </tfoot>
     </table>
 </body>
 </html>
+
