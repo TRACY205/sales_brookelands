@@ -139,9 +139,9 @@
       </select>
 
       <label>Quantity</label>
-      <input type="number" name="quantity" min="1" required>
+      <input type="number" id="quantity" name="quantity" min="1" required>
 
-      <label>Price</label>
+      <label>Total Price</label>
       <input type="text" id="price" name="price" readonly required>
 
       <button type="submit">✅ Submit Order</button>
@@ -196,13 +196,18 @@ const itemsWithPrices = {
   }
 };
 
-document.getElementById("category").addEventListener("change", function() {
-    const category = this.value;
-    const itemSelect = document.getElementById("item");
-    const priceInput = document.getElementById("price");
+const categorySelect = document.getElementById("category");
+const itemSelect = document.getElementById("item");
+const priceInput = document.getElementById("price");
+const qtyInput = document.getElementById("quantity");
 
+let unitPrice = 0;
+
+categorySelect.addEventListener("change", function() {
+    const category = this.value;
     itemSelect.innerHTML = "<option value=''>--Select Item--</option>";
     priceInput.value = "";
+    unitPrice = 0;
 
     if (itemsWithPrices[category]) {
         Object.keys(itemsWithPrices[category]).forEach(item => {
@@ -214,17 +219,25 @@ document.getElementById("category").addEventListener("change", function() {
     }
 });
 
-document.getElementById("item").addEventListener("change", function() {
-    const category = document.getElementById("category").value;
+itemSelect.addEventListener("change", function() {
+    const category = categorySelect.value;
     const item = this.value;
-    const priceInput = document.getElementById("price");
-
     if (itemsWithPrices[category] && itemsWithPrices[category][item] !== undefined) {
-        priceInput.value = itemsWithPrices[category][item];
+        unitPrice = itemsWithPrices[category][item];
+        updateTotal();
     } else {
+        unitPrice = 0;
         priceInput.value = "";
     }
 });
+
+qtyInput.addEventListener("input", updateTotal);
+
+function updateTotal() {
+    const qty = parseInt(qtyInput.value) || 0;
+    priceInput.value = unitPrice * qty;
+}
 </script>
 
 {% endblock %}
+
