@@ -148,7 +148,7 @@
       <input type="number" id="quantity" name="quantity" min="1" required>
 
       <label>Total Price</label>
-      <input type="text" id="price" name="price" readonly required>
+      <input type="text" id="price" name="price" required>
 
       <label>Payment Method</label>
       <div class="payment-options">
@@ -231,6 +231,13 @@ categorySelect.addEventListener("change", function() {
     priceInput.value = "";
     unitPrice = 0;
 
+    if (category === "Gas") {
+        priceInput.readOnly = false; // Gas price editable
+        priceInput.value = "";
+    } else {
+        priceInput.readOnly = true;  // Water price fixed
+    }
+
     if (itemsWithPrices[category]) {
         Object.keys(itemsWithPrices[category]).forEach(item => {
             const opt = document.createElement("option");
@@ -244,16 +251,32 @@ categorySelect.addEventListener("change", function() {
 itemSelect.addEventListener("change", function() {
     const category = categorySelect.value;
     const item = this.value;
-    if (itemsWithPrices[category] && itemsWithPrices[category][item] !== undefined) {
-        unitPrice = itemsWithPrices[category][item];
-        updateTotal();
+
+    if (category === "Gas") {
+        unitPrice = parseFloat(priceInput.value) || 0; // manual input
     } else {
-        unitPrice = 0;
-        priceInput.value = "";
+        if (itemsWithPrices[category] && itemsWithPrices[category][item] !== undefined) {
+            unitPrice = itemsWithPrices[category][item];
+            updateTotal();
+        } else {
+            unitPrice = 0;
+            priceInput.value = "";
+        }
     }
 });
 
-qtyInput.addEventListener("input", updateTotal);
+qtyInput.addEventListener("input", function() {
+    const qty = parseInt(qtyInput.value) || 0;
+    if (categorySelect.value !== "Gas") {
+        priceInput.value = unitPrice * qty;
+    }
+});
+
+priceInput.addEventListener("input", function() {
+    if (categorySelect.value === "Gas") {
+        unitPrice = parseFloat(priceInput.value) || 0;
+    }
+});
 
 function updateTotal() {
     const qty = parseInt(qtyInput.value) || 0;
