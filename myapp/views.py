@@ -149,22 +149,23 @@ def admin_dashboard(request):
 # Admin PDF report
 # --------------------------
 @login_required
+
+
 def admin_dashboard_pdf(request):
-    sales = Sale.objects.all().annotate(
-        total_price=ExpressionWrapper(F("price") * F("quantity"), output_field=DecimalField())
-    )
-    total_amount = sales.aggregate(total=Sum("total_price"))["total"] or 0
-
-    template = get_template("sales_report_pdf.html")
-    html = template.render({"sales": sales, "total_amount": total_amount})
-
-    response = HttpResponse(content_type="application/pdf")
-    response['Content-Disposition'] = 'attachment; filename="sales_report.pdf"'
-
-    pisa_status = pisa.CreatePDF(html, dest=response, encoding="UTF-8")
-
+    sales = Sale.objects.all()
+    total_amount = sum(sale.price for sale in sales)
+    template_path = 'admin_dashboard_pdf.html'
+    context = {'sales': sales, 'total_amount': total_amount}
+    
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'filename="sales_report.pdf"'
+    
+    template = get_template(template_path)
+    html = template.render(context)
+    
+    pisa_status = pisa.CreatePDF(html, dest=response)
     if pisa_status.err:
-        return HttpResponse("PDF generation error <pre>" + html + "</pre>")
+        return HttpResponse('We had some errors <pre>' + html + '</pre>')
     return response
 
 

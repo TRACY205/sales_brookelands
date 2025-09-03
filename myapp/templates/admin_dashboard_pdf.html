@@ -33,7 +33,7 @@
     </style>
 </head>
 <body>
-    <h2>Sales Report</h2>
+    <h2>💧 Sales Report</h2>
     <table>
         <thead>
             <tr>
@@ -55,10 +55,8 @@
                 <td>{{ sale.category }}</td>
                 <td>{{ sale.item }}</td>
                 <td>{{ sale.quantity }}</td>
-                <!-- ✅ show prices as whole numbers -->
-                <td>{{ sale.price|floatformat:0 }}</td>
-                <td>{{ sale.total_price|floatformat:0 }}</td>
-                <!-- ✅ show date in dd/mm/yy format -->
+                <td>KSh {{ sale.price|floatformat:0 }}</td>
+                <td>KSh {{ sale.total_price|floatformat:0 }}</td>
                 <td>{{ sale.date|date:"d/m/y" }}</td>
             </tr>
             {% empty %}
@@ -69,11 +67,12 @@
         </tbody>
         <tfoot>
             <tr>
-                <td colspan="6">Total Sales (KSh)</td>
-                <td colspan="2">{{ total_amount|floatformat:0 }}</td>
+                <td colspan="8">Total Records: {{ sales|length }}</td>
+            </tr>
+            <tr>
+                <td colspan="8">Total Sales: KSh {{ total_amount|floatformat:0 }}</td>
             </tr>
         </tfoot>
     </table>
 </body>
 </html>
-

@@ -1,59 +1,48 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Sales Report</title>
+    <title>Sales Report (PDF)</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            margin: 30px;
-            color: #333;
+            font-family: DejaVu Sans, sans-serif;
+            font-size: 12px;
+            margin: 20px;
         }
-
+        h1 {
+            text-align: center;
+            margin-bottom: 5px;
+            font-size: 18px;
+        }
         h2 {
             text-align: center;
-            color: #2c3e50;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
+            font-size: 15px;
         }
-
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
+            margin-top: 10px;
         }
-
+        th, td {
+            border: 1px solid #333;
+            padding: 6px;
+            text-align: center;
+        }
         th {
-            background-color: #3498db;
-            color: white;
-            padding: 10px;
-            text-align: center;
-            font-size: 14px;
+            background: #ddd;
         }
-
-        td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: center;
-            font-size: 13px;
-        }
-
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-
-        tr:hover {
-            background-color: #f1f1f1;
-        }
-
-        /* Footer summary row */
         tfoot td {
             font-weight: bold;
-            background-color: #ecf0f1;
+            background: #f2f2f2;
         }
     </style>
 </head>
 <body>
+    <!-- ✅ Company and report title -->
+    <h1>Brookelands Water and Gas</h1>
     <h2>💧 Sales Report</h2>
+
     <table>
         <thead>
             <tr>
@@ -75,20 +64,22 @@
                 <td>{{ sale.category }}</td>
                 <td>{{ sale.item }}</td>
                 <td>{{ sale.quantity }}</td>
-                <td>KSh {{ sale.price|floatformat:2 }}</td>
-                <td>KSh {{ sale.total_price|floatformat:2 }}</td>  {# ✅ new #}
-                <td>{{ sale.date|date:"d M Y" }}</td>
+                <td>KSh {{ sale.price|floatformat:0 }}</td>
+                <td>KSh {{ sale.total_price|floatformat:0 }}</td>
+                <td>{{ sale.date|date:"d/m/y" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="8">No sales available.</td>
             </tr>
             {% endfor %}
         </tbody>
         <tfoot>
             <tr>
-                <td colspan="6">Total Records</td>
-                <td colspan="2">{{ sales|length }}</td>
+                <td colspan="8">Total Records: {{ sales|length }}</td>
             </tr>
             <tr>
-                <td colspan="6">Total Amount</td>
-                <td colspan="2">KSh {{ total_amount|floatformat:2 }}</td>
+                <td colspan="8">Total Sales: KSh {{ total_amount|floatformat:0 }}</td>
             </tr>
         </tfoot>
     </table>

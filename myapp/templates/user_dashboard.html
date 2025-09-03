@@ -112,7 +112,9 @@
 
 <div class="dashboard-container">
 
-  <h2>Welcome, {{ user.username }}</h2>
+  <!-- ✅ Company Name -->
+  <h2>Brookelands Water and Gas</h2>
+  <h3>Welcome, {{ user.username }}</h3>
 
   <!-- Messages -->
   {% if messages %}
@@ -273,4 +275,5 @@ function validateForm() {
 </script>
 
 {% endblock %}
+
 
