@@ -123,7 +123,7 @@
   <!-- Order Form -->
   <div class="order-form">
     <h3>📦 Submit New Order</h3>
-    <form method="post">
+    <form method="post" onsubmit="return validateForm()">
       {% csrf_token %}
       
       <label>Category</label>
@@ -237,7 +237,15 @@ function updateTotal() {
     const qty = parseInt(qtyInput.value) || 0;
     priceInput.value = unitPrice * qty;
 }
+
+// ✅ Validation before submit
+function validateForm() {
+  if (!priceInput.value || priceInput.value === "0") {
+    alert("⚠️ Please select category, item, and quantity before submitting.");
+    return false;
+  }
+  return true;
+}
 </script>
 
 {% endblock %}
-
