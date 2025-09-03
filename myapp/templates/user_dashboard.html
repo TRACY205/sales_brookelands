@@ -100,6 +100,14 @@
     padding: 15px;
     color: #777;
   }
+
+  /* ✅ Payment style */
+  .payment-options {
+    margin-bottom: 15px;
+  }
+  .payment-options label {
+    margin-right: 20px;
+  }
 </style>
 
 <div class="dashboard-container">
@@ -144,6 +152,13 @@
       <label>Total Price</label>
       <input type="text" id="price" name="price" readonly required>
 
+      <!-- ✅ Payment Method -->
+      <label>Payment Method</label>
+      <div class="payment-options">
+        <label><input type="checkbox" name="payment_method" value="Cash"> Cash</label>
+        <label><input type="checkbox" name="payment_method" value="MPesa"> MPesa</label>
+      </div>
+
       <button type="submit">✅ Submit Order</button>
     </form>
   </div>
@@ -158,6 +173,7 @@
       <th>Quantity</th>
       <th>Price</th>
       <th>Date</th>
+      <th>Payment</th>
     </tr>
     {% for sale in sales %}
     <tr>
@@ -167,10 +183,11 @@
       <td>{{ sale.quantity }}</td>
       <td>{{ sale.price }}</td>
       <td>{{ sale.date|date:"Y-m-d H:i" }}</td>
+      <td>{{ sale.payment_method }}</td>
     </tr>
     {% empty %}
     <tr>
-      <td colspan="6" class="empty">No orders yet.</td>
+      <td colspan="7" class="empty">No orders yet.</td>
     </tr>
     {% endfor %}
   </table>
@@ -244,6 +261,14 @@ function validateForm() {
     alert("⚠️ Please select category, item, and quantity before submitting.");
     return false;
   }
+
+  // Check if payment selected
+  const payments = document.querySelectorAll('input[name="payment_method"]:checked');
+  if (payments.length === 0) {
+    alert("⚠️ Please select at least one payment method.");
+    return false;
+  }
+
   return true;
 }
 </script>

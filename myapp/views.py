@@ -72,21 +72,27 @@ def logout_view(request):
     return redirect("landing")
 
 
-# --------------------------
-# Price list (backend-secured)
-# --------------------------
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from .models import Sale
+
+# ✅ Price list dictionary
 PRICE_LIST = {
-    "20L": 250,
-    "10L": 150,
-    "5L": 80,
-    "1L (Pack)": 50,
-    "500ML (Pack)": 30,
+    "1L + B": 30,
+    "1L (Refill)": 10,
+    "5L (Refill)": 70,
+    "5L + Bottle": 150,
+    "10L (Refill)": 130,
+    "10L + Bottle": 250,
+    "20L (Refill)": 250,
+    "20L + Bottle": 500,
+    "20L (Hard) + Water": 1500,
+    "20L Bottle": 0,
+    "10L Bottle": 0,
+    "5L Bottle": 0,
 }
 
-
-# --------------------------
-# User dashboard
-# --------------------------
 @login_required
 def user_dashboard(request):
     if request.method == "POST":
@@ -94,25 +100,28 @@ def user_dashboard(request):
         item = request.POST.get("item")
         quantity = request.POST.get("quantity")
 
-        # ✅ Force price from backend
-        price = PRICE_LIST.get(item)
+        try:
+            quantity = int(quantity)
+        except:
+            quantity = 0
 
-        if category and item and quantity and price:
+        unit_price = PRICE_LIST.get(item)   # ✅ lookup item price
+
+        if category and item and quantity > 0 and unit_price is not None:
             Sale.objects.create(
                 user=request.user,
                 category=category,
                 item=item,
-                quantity=int(quantity),
-                price=price
+                quantity=quantity,
+                price=quantity * unit_price  # ✅ total price stored
             )
-            messages.success(request, "Order submitted successfully!")
+            messages.success(request, "✅ Order submitted successfully!")
             return redirect("user_dashboard")
         else:
-            messages.error(request, "Please fill all fields correctly.")
+            messages.error(request, "⚠️ Please fill all fields correctly.")
 
     sales = Sale.objects.filter(user=request.user).order_by("-date")
-    return render(request, "user_dashboard.html", {"sales": sales, "PRICE_LIST": PRICE_LIST})
-
+    return render(request, "user_dashboard.html", {"sales": sales})
 
 # --------------------------
 # Admin dashboard
@@ -168,7 +177,7 @@ def add_sale(request):
         quantity = request.POST.get("quantity")
 
         # ✅ Secure price
-        price = PRICE_LIST.get(item)
+        price = price.get(item)
 
         if category and item and quantity and price:
             Sale.objects.create(
@@ -180,5 +189,5 @@ def add_sale(request):
             )
             return redirect("user_dashboard")
 
-    return render(request, "add_sale.html", {"PRICE_LIST": PRICE_LIST})
+    return render(request, "add_sale.html", {"PRICE_LIST": price})
 
