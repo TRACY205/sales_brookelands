@@ -1,15 +1,21 @@
 import os
 from pathlib import Path
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+# -----------------------------
+# BASE DIRECTORY
+# -----------------------------
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Quick-start development settings - unsuitable for production
+# -----------------------------
+# SECURITY
+# -----------------------------
 SECRET_KEY = 'django-insecure-rg9a03gsm&-fzdxyic&b*sp628+7y$q5^8_3c67hjnbhbs$&(d'
-DEBUG = True
-ALLOWED_HOSTS = []
+DEBUG = True  # Set to False in production
+ALLOWED_HOSTS = ['solomon123.pythonanywhere.com']
 
-# Application definition
+# -----------------------------
+# INSTALLED APPS
+# -----------------------------
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -17,9 +23,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    "myapp",
+    'myapp',  # your app
 ]
 
+# -----------------------------
+# MIDDLEWARE
+# -----------------------------
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -30,12 +39,15 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# -----------------------------
+# URL & TEMPLATES
+# -----------------------------
 ROOT_URLCONF = 'sales_system.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],  # optional project-wide templates
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -50,7 +62,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'sales_system.wsgi.application'
 
-# Database
+# -----------------------------
+# DATABASE
+# -----------------------------
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -58,24 +72,42 @@ DATABASES = {
     }
 }
 
-# Password validation
+# -----------------------------
+# PASSWORD VALIDATION
+# -----------------------------
 AUTH_PASSWORD_VALIDATORS = [
-    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',},
-    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',},
-    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',},
-    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',},
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-# Internationalization
+# -----------------------------
+# INTERNATIONALIZATION
+# -----------------------------
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-# Static files
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+# -----------------------------
+# STATIC FILES
+# -----------------------------
+STATIC_URL = '/static/'  # URL for static files
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # collectstatic destination
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),  # optional, for dev static files inside project
+]
 
-# Default primary key field type
+# -----------------------------
+# MEDIA FILES (optional)
+# -----------------------------
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# -----------------------------
+# DEFAULT PRIMARY KEY FIELD
+# -----------------------------
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
 
