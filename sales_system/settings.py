@@ -11,7 +11,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # -----------------------------
 SECRET_KEY = 'django-insecure-rg9a03gsm&-fzdxyic&b*sp628+7y$q5^8_3c67hjnbhbs$&(d'
 DEBUG = True  # Set to False in production
-ALLOWED_HOSTS = ['solomon123.pythonanywhere.com']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'solomon123.pythonanywhere.com']
 
 # -----------------------------
 # INSTALLED APPS
@@ -109,5 +109,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # DEFAULT PRIMARY KEY FIELD
 # -----------------------------
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
 
 
