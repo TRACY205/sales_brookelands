@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Add Expense{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Add Expense</h2>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <div class="mb-3">
+            <label for="date" class="form-label">Date</label>
+            <input type="date" class="form-control" id="date" name="date" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="paid_to" class="form-label">Paid To</label>
+            <input type="text" class="form-control" id="paid_to" name="paid_to" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="charged_to" class="form-label">Charged To</label>
+            <input type="text" class="form-control" id="charged_to" name="charged_to" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="description" class="form-label">Description</label>
+            <input type="text" class="form-control" id="description" name="description" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="receipt_no" class="form-label">Receipt No</label>
+            <input type="text" class="form-control" id="receipt_no" name="receipt_no">
+        </div>
+
+        <div class="mb-3">
+            <label for="sponsor" class="form-label">Sponsor</label>
+            <input type="text" class="form-control" id="sponsor" name="sponsor">
+        </div>
+
+        <div class="mb-3">
+            <label for="amount_injected" class="form-label">Amount Injected (KSh)</label>
+            <input type="number" step="0.01" class="form-control" id="amount_injected" name="amount_injected" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="amount_paid" class="form-label">Amount Paid (KSh)</label>
+            <input type="number" step="0.01" class="form-control" id="amount_paid" name="amount_paid" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="bank_charges" class="form-label">Bank Charges (KSh)</label>
+            <input type="number" step="0.01" class="form-control" id="bank_charges" name="bank_charges">
+        </div>
+
+        <div class="mb-3">
+            <label for="running_balance" class="form-label">Running Balance (KSh)</label>
+            <input type="number" step="0.01" class="form-control" id="running_balance" name="running_balance">
+        </div>
+
+        <button type="submit" class="btn btn-success">Add Expense</button>
+        <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

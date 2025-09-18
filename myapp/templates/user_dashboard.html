@@ -1,305 +1,290 @@
-{% extends "base.html" %}
 {% block title %}User Dashboard{% endblock %}
 
 {% block content %}
-
 <style>
-  .dashboard-container {
-    max-width: 900px;
+/* ===== Page Background ===== */
+body {
+    margin: 0;
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #d4edda, #a8e6a3);
+    min-height: 100vh;
+}
+
+/* ===== Dashboard Container ===== */
+.dashboard-container {
+    max-width: 1000px;
     margin: 30px auto;
-    padding: 20px;
+    padding: 30px;
     background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  }
-  .dashboard-container h2, .dashboard-container h3 {
+    border-radius: 25px;
+    box-shadow: 0 15px 25px rgba(0,0,0,0.1);
+}
+
+/* ===== Headings ===== */
+.dashboard-container h2 {
+    text-align: center;
+    color: #28a745;
+    font-family: 'Comic Sans MS', cursive;
+    font-size: 2.2em;
+    margin-bottom: 5px;
+}
+.dashboard-container h3 {
     text-align: center;
     color: #333;
-    margin-bottom: 20px;
-  }
-  .message {
-    padding: 10px;
-    margin-bottom: 15px;
-    border-radius: 5px;
-  }
-  .message.success {
-    background-color: #ddffdd;
-    color: #3c763d;
-    border: 1px solid #3c763d;
-  }
-  .message.error {
-    background-color: #ffdddd;
-    color: #a94442;
-    border: 1px solid #a94442;
-  }
-  .top-links {
-    text-align: right;
-    margin-bottom: 20px;
-  }
-  .top-links a {
-    margin-left: 10px;
-    text-decoration: none;
-    font-weight: 500;
-  }
-  .top-links a.register { color: #007BFF; }
-  .top-links a.logout { color: #d9534f; }
+    margin-bottom: 25px;
+    font-size: 1.2em;
+}
+h2::before { content: "💧 "; } h2::after { content: " 🌿"; }
+h3::before { content: "✨ "; }
 
-  .order-form {
-    padding: 20px;
-    border: 1px solid #eee;
-    border-radius: 10px;
-    background: #fafafa;
-    margin-bottom: 30px;
-  }
-  .order-form h3 {
+/* ===== Messages ===== */
+.message {
+    padding: 12px;
     margin-bottom: 15px;
-    color: #444;
-  }
-  .order-form label {
-    font-weight: 500;
-  }
-  .order-form input,
-  .order-form select {
-    width: 100%;
-    padding: 10px;
-    margin-top: 5px;
-    margin-bottom: 15px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-  }
-  .order-form button {
+    border-radius: 15px;
+    font-size: 0.95em;
+    text-align: center;
+}
+.message.success { background-color: #d4edda; color: #155724; border: 1px solid #155724; }
+.message.error { background-color: #f8d7da; color: #721c24; border: 1px solid #721c24; }
+
+/* ===== Top Links ===== */
+.top-links { text-align: center; margin-bottom: 30px; }
+.top-links a {
+    margin: 5px;
+    text-decoration: none;
+    font-weight: 600;
+    padding: 10px 20px;
+    border-radius: 50px;
+    transition: all 0.3s ease;
+}
+.top-links a.register { background: #28a745; color: #fff; }
+.top-links a.register:hover { background: #218838; transform: scale(1.05); }
+.top-links a.logout { background: #dc3545; color: #fff; }
+.top-links a.logout:hover { background: #c82333; transform: scale(1.05); }
+
+/* ===== Order Form ===== */
+.order-form {
+    padding: 25px;
+    border-radius: 25px;
+    background: #e9f7ef;
+    margin-bottom: 35px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+    transition: transform 0.2s ease;
+}
+.order-form:hover { transform: scale(1.01); }
+.order-form h3 { margin-bottom: 20px; font-size: 1.4em; }
+.order-form label { font-weight: 600; display: block; margin-top: 10px; }
+.order-form input, .order-form select {
     width: 100%;
     padding: 12px;
+    margin-top: 5px;
+    margin-bottom: 15px;
+    border-radius: 50px;
+    border: 1px solid #ccc;
+    transition: all 0.3s ease;
+    font-size: 1em;
+}
+.order-form input:focus, .order-form select:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 10px rgba(40,167,69,0.2);
+    outline: none;
+}
+.order-form button {
+    width: 100%;
+    padding: 14px;
     background: #28a745;
-    color: white;
+    color: #fff;
     border: none;
-    border-radius: 8px;
+    border-radius: 50px;
     font-weight: bold;
+    font-size: 1.1em;
     cursor: pointer;
-  }
-  .order-form button:hover {
-    background: #218838;
-  }
+    transition: all 0.3s ease;
+}
+.order-form button:hover { background: #218838; transform: scale(1.05); }
 
-  .orders-table {
+/* ===== Orders Table ===== */
+.orders-table {
     width: 100%;
     border-collapse: collapse;
-    border: 1px solid #ddd;
-  }
-  .orders-table th,
-  .orders-table td {
-    padding: 10px;
-    border: 1px solid #ddd;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 8px 18px rgba(0,0,0,0.05);
+}
+.orders-table th, .orders-table td {
+    padding: 14px;
+    border: 1px solid #eee;
     text-align: left;
-  }
-  .orders-table th {
-    background: #f2f2f2;
-  }
-  .orders-table .empty {
-    text-align: center;
-    padding: 15px;
-    color: #777;
-  }
+}
+.orders-table th { background: #28a745; color: #fff; font-size: 1em; }
+.orders-table tr:nth-child(even) { background: #e9f7ef; }
+.orders-table tr:hover { background: #d4edda; transition: 0.3s; }
+.orders-table .empty { text-align: center; padding: 15px; color: #777; font-style: italic; }
 
-  .payment-options {
-    margin-bottom: 15px;
-  }
-  .payment-options label {
-    margin-right: 20px;
-  }
+/* ===== Payment Options ===== */
+.payment-options label {
+    margin-right: 25px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.payment-options input { margin-right: 8px; }
+
+/* ===== Placeholder Styling ===== */
+input::placeholder { color: #aaa; font-style: italic; }
+
+/* ===== Responsive ===== */
+@media(max-width: 768px) {
+    .order-form { padding: 20px; }
+    .order-form button { font-size: 1em; }
+    .orders-table th, .orders-table td { font-size: 0.9em; padding: 10px; }
+    .dashboard-container { padding: 20px; margin: 20px auto; }
+}
 </style>
 
 <div class="dashboard-container">
+    <h2>Brookelands Sales System</h2>
+    <h3>Welcome, {{ user.username }}</h3>
 
-  <h2>Brookelands Water and Gas</h2>
-  <h3>Welcome, {{ user.username }}</h3>
+    {% if messages %}
+        {% for message in messages %}
+            <div class="message {% if message.tags == 'error' %}error{% else %}success{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
 
-  {% if messages %}
-    {% for message in messages %}
-      <div class="message {% if message.tags == 'error' %}error{% else %}success{% endif %}">
-        {{ message }}
-      </div>
-    {% endfor %}
-  {% endif %}
+    <div class="top-links">
+        <a href="{% url 'register' %}" class="register">➕ Register New User</a>
+        <a href="{% url 'logout' %}" class="logout">🚪 Logout</a>
+    </div>
 
-  <p class="top-links">
-    <a href="{% url 'register' %}" class="register">➕ Register a new user</a> | 
-    <a href="{% url 'logout' %}" class="logout">🚪 Logout</a>
-  </p>
+    <!-- ===== Order Form ===== -->
+    <div class="order-form">
+        <h3>📦 Submit New Order</h3>
+        <form method="post" action="{% url 'user_dashboard' %}">
+            {% csrf_token %}
 
-  <div class="order-form">
-    <h3>📦 Submit New Order</h3>
-    <form method="post" onsubmit="return validateForm()">
-      {% csrf_token %}
-      
-      <label>Category</label>
-      <select id="category" name="category" required>
-        <option value="">--Select Category--</option>
-        <option value="Water">Water</option>
-        <option value="Gas">Gas</option>
-      </select>
+            <label>Category</label>
+            <select id="category" name="category" required>
+                <option value="">--Select Category--</option>
+                <option value="Water">Water 💧</option>
+                <option value="Gas">Gas 🔥</option>
+            </select>
 
-      <label>Item</label>
-      <select id="item" name="item" required>
-        <option value="">--Select Item--</option>
-      </select>
+            <label>Item</label>
+            <select id="item" name="item">
+                <option value="">--Select Item--</option>
+            </select>
 
-      <label>Quantity</label>
-      <input type="number" id="quantity" name="quantity" min="1" required>
+            <p style="text-align:center; font-style: italic; margin: -10px 0 10px 0;">
+                OR enter a local item:
+            </p>
+            <input type="text" id="local_item" name="local_item" placeholder="Type local item name here">
 
-      <label>Total Price</label>
-      <input type="text" id="price" name="price" required>
+            <label>Quantity</label>
+            <input type="number" id="quantity" name="quantity" min="1" value="1" required>
 
-      <label>Payment Method</label>
-      <div class="payment-options">
-        <label><input type="radio" name="payment_method" value="Cash" required> Cash</label>
-        <label><input type="radio" name="payment_method" value="MPesa" required> MPesa</label>
-      </div>
+            <label>Total Price</label>
+            <input type="text" id="price" name="price" placeholder="Automatically calculated">
 
-      <button type="submit">✅ Submit Order</button>
-    </form>
-  </div>
+            <label>Payment Method</label>
+            <div class="payment-options">
+                <label><input type="radio" name="payment_method" value="Cash" required> 💵 Cash</label>
+                <label><input type="radio" name="payment_method" value="MPesa" required> 📱 MPesa</label>
+            </div>
 
-  <h3>📋 Your Previous Orders</h3>
-  <table class="orders-table">
-    <tr>
-      <th>ID</th>
-      <th>Category</th>
-      <th>Item</th>
-      <th>Quantity</th>
-      <th>Price</th>
-      <th>Date</th>
-      <th>Payment</th>
-    </tr>
-    {% for sale in sales %}
-    <tr>
-      <td>{{ sale.id }}</td>
-      <td>{{ sale.category }}</td>
-      <td>{{ sale.item }}</td>
-      <td>{{ sale.quantity }}</td>
-      <td>KSh {{ sale.price|floatformat:0 }}</td>
-      <td>{{ sale.date|date:"d/m/y" }}</td>
-      <td>{{ sale.payment_method }}</td>
-    </tr>
-    {% empty %}
-    <tr>
-      <td colspan="7" class="empty">No orders yet.</td>
-    </tr>
-    {% endfor %}
-  </table>
+            <button type="submit">✅ Submit Order</button>
+        </form>
+    </div>
+
+    <!-- ===== Previous Orders ===== -->
+    <h3>📋 Your Previous Orders</h3>
+    <table class="orders-table">
+        <tr>
+            <th>ID</th>
+            <th>Category</th>
+            <th>Item</th>
+            <th>Quantity</th>
+            <th>Price</th>
+            <th>Date</th>
+            <th>Payment</th>
+        </tr>
+        {% for expense in expenses %}
+        <tr>
+            <td>{{ expense.id }}</td>
+            <td>{{ expense.category }}</td>
+            <td>{{ expense.item }}</td>
+            <td>{{ expense.quantity }}</td>
+            <td>KSh {{ expense.price|floatformat:0 }}</td>
+            <td>{{ expense.date|date:"d/m/y" }}</td>
+            <td>{{ expense.payment_method }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="7" class="empty">No orders yet.</td>
+        </tr>
+        {% endfor %}
+    </table>
 </div>
 
+<!-- ===== JS for Dynamic Pricing ===== -->
 <script>
-const itemsWithPrices = {
-  "Water": {
-    "1L + B": 30,
-    "1L (Refill)": 10,
-    "5L (Refill)": 70,
-    "5L + Bottle": 150,
-    "10L (Refill)": 130,
-    "10L + Bottle": 250,
-    "20L (Refill)": 250,
-    "20L + Bottle": 500,
-    "20L (Hard) + Water": 1500
-  },
-  "Gas": {
-    "Insta Gas 6kg": 1000,
-    "Insta Gas 12kg": 3500,
-    "Pro Gas 6kg": 1000,
-    "Pro Gas 12kg": 3500,
-    "Wajiko 6kg": 1000,
-    "Wajiko 12kg": 3500,
-    "K Gas 6kg": 1000,
-    "K Gas 12kg": 3500,
-    "Afri Gas 6kg": 1000,
-    "Afri Gas 12kg": 3500,
-    "Total Gas 6kg": 1000,
-    "Total Gas 12kg": 3500
-   
-  }
-};
+document.addEventListener("DOMContentLoaded", function() {
+    const PRICE_LIST = JSON.parse('{{ PRICE_LIST_JSON|escapejs }}');
 
-const categorySelect = document.getElementById("category");
-const itemSelect = document.getElementById("item");
-const priceInput = document.getElementById("price");
-const qtyInput = document.getElementById("quantity");
+    const categorySelect = document.getElementById("category");
+    const itemSelect = document.getElementById("item");
+    const qtyInput = document.getElementById("quantity");
+    const priceInput = document.getElementById("price");
+    const localInput = document.getElementById("local_item");
 
-let unitPrice = 0;
+    let unitPrice = 0;
+    let manualPriceEdited = false;
 
-categorySelect.addEventListener("change", function() {
-    const category = this.value;
-    itemSelect.innerHTML = "<option value=''>--Select Item--</option>";
-    priceInput.value = "";
-    unitPrice = 0;
-
-    if (category === "Gas") {
-        priceInput.readOnly = false; // Gas price editable
+    categorySelect.addEventListener("change", () => {
+        const category = categorySelect.value;
+        itemSelect.innerHTML = "<option value=''>--Select Item--</option>";
+        unitPrice = 0;
         priceInput.value = "";
-    } else {
-        priceInput.readOnly = true;  // Water price fixed
-    }
+        localInput.value = "";
+        manualPriceEdited = false;
 
-    if (itemsWithPrices[category]) {
-        Object.keys(itemsWithPrices[category]).forEach(item => {
-            const opt = document.createElement("option");
-            opt.value = item;
-            opt.text = item;
-            itemSelect.appendChild(opt);
-        });
-    }
-});
-
-itemSelect.addEventListener("change", function() {
-    const category = categorySelect.value;
-    const item = this.value;
-
-    if (category === "Gas") {
-        unitPrice = parseFloat(priceInput.value) || 0; // manual input
-    } else {
-        if (itemsWithPrices[category] && itemsWithPrices[category][item] !== undefined) {
-            unitPrice = itemsWithPrices[category][item];
-            updateTotal();
-        } else {
-            unitPrice = 0;
-            priceInput.value = "";
+        if (category && PRICE_LIST[category]) {
+            for (const item in PRICE_LIST[category]) {
+                const option = document.createElement("option");
+                option.value = item;
+                option.textContent = item;
+                itemSelect.appendChild(option);
+            }
         }
-    }
+    });
+
+    itemSelect.addEventListener("change", () => {
+        const category = categorySelect.value;
+        const item = itemSelect.value;
+        if (item) localInput.value = "";
+        unitPrice = PRICE_LIST[category]?.[item] || 0;
+        const qty = parseInt(qtyInput.value) || 1;
+        if (!manualPriceEdited) priceInput.value = unitPrice * qty;
+    });
+
+    qtyInput.addEventListener("input", () => {
+        const qty = parseInt(qtyInput.value) || 0;
+        if (!manualPriceEdited) priceInput.value = unitPrice * qty;
+    });
+
+    localInput.addEventListener("input", () => {
+        if (localInput.value.trim() !== "") {
+            itemSelect.value = "";
+            unitPrice = 0;
+            if (!manualPriceEdited) priceInput.value = "";
+        }
+    });
+
+    priceInput.addEventListener("input", () => {
+        manualPriceEdited = true;
+    });
 });
-
-qtyInput.addEventListener("input", function() {
-    const qty = parseInt(qtyInput.value) || 0;
-    if (categorySelect.value !== "Gas") {
-        priceInput.value = unitPrice * qty;
-    }
-});
-
-priceInput.addEventListener("input", function() {
-    if (categorySelect.value === "Gas") {
-        unitPrice = parseFloat(priceInput.value) || 0;
-    }
-});
-
-function updateTotal() {
-    const qty = parseInt(qtyInput.value) || 0;
-    priceInput.value = unitPrice * qty;
-}
-
-function validateForm() {
-  if (!priceInput.value || priceInput.value === "0") {
-    alert("⚠️ Please select category, item, and quantity before submitting.");
-    return false;
-  }
-
-  const payment = document.querySelector('input[name="payment_method"]:checked');
-  if (!payment) {
-    alert("⚠️ Please select a payment method.");
-    return false;
-  }
-
-  return true;
-}
 </script>
-
 {% endblock %}
-
-

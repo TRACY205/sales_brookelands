@@ -4,20 +4,50 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
-from django.db.models import Sum, F, ExpressionWrapper, DecimalField
+from django.db.models import Sum
 from django.http import HttpResponse
 from django.template.loader import get_template
 from xhtml2pdf import pisa
-import io
+from .models import Expense
+from decimal import Decimal
+from django.utils import timezone
+from .models import Expense, Sale
 
-from .models import Sale
+
+
+
+# --------------------------
+# Price list for sales
+# --------------------------
+PRICE_LIST = {
+    "Water": {
+        "1L": 10,
+        "1L + B": 30,
+        "1L (R)": 10,
+        "5L (R)": 70,
+        "5L + Bottle": 150,
+        "10L (R)": 130,
+        "10L + Bottle": 250,
+        "20L (R)": 250,
+        "20L + Bottle": 500,
+        "20L (Hard) + water": 1500,
+    },
+    "Gas": {
+        "Insta Gas 6kg": 1000,
+        "Insta Gas 13kg": 3500,
+        "Pro Gas 6kg": 1000,
+        "Pro Gas 13kg": 3500,
+        "Wajiko 6kg": 1000,
+        "Wajiko 13kg": 3500,
+    }
+}
+
 
 # --------------------------
 # Landing page
 # --------------------------
 def landing(request):
     return render(request, "landing.html")
-
 
 # --------------------------
 # User registration
@@ -42,159 +72,107 @@ def register_view(request):
 
     return render(request, "register.html")
 
-
 # --------------------------
 # User login
 # --------------------------
+from django.views.decorators.csrf import ensure_csrf_cookie
+
+@ensure_csrf_cookie
 def login_view(request):
     if request.method == "POST":
-        username = request.POST["username"]
-        password = request.POST["password"]
+        username = request.POST.get("username")
+        password = request.POST.get("password")
         user = authenticate(request, username=username, password=password)
-        if user is not None:
+        if user:
             login(request, user)
-            if user.is_staff:   # admin/staff
+            if user.is_superuser:
                 return redirect("admin_dashboard")
-            else:
-                return redirect("user_dashboard")
+            return redirect("user_dashboard")
         else:
-            return render(request, "login.html", {"error": "Invalid credentials"})
+            messages.error(request, "Invalid username or password")
     return render(request, "login.html")
 
-
 # --------------------------
-# User logout
+# Logout
 # --------------------------
-@login_required
 def logout_view(request):
     logout(request)
-    messages.success(request, "Logged out successfully.")
-    return redirect("landing")
-
+    return redirect("login")
 
 # --------------------------
 # User dashboard
 # --------------------------
-# myapp/views.py
-from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from .models import Sale
-
-# ✅ Full PRICE LIST including Water and Gas
-PRICE_LIST = {
-    # Water
-    "1L + B": 30,
-    "1L (Refill)": 10,
-    "5L (Refill)": 70,
-    "5L + Bottle": 150,
-    "10L (Refill)": 130,
-    "10L + Bottle": 250,
-    "20L (Refill)": 250,
-    "20L + Bottle": 500,
-    "20L (Hard) + Water": 1500,
-
-    # Gas
-    "Insta Gas 6kg": 1000,
-    "Insta Gas 12kg": 3500,
-    "Pro Gas 6kg": 1000,
-    "Pro Gas 12kg": 3500,
-    "Wajiko 6kg": 1000,
-    "Wajiko 12kg": 3500,
-    "K Gas 6kg": 1000,
-    "K Gas 12kg": 3500,
-    "Afri Gas 6kg": 1000,
-    "Afri Gas 12kg": 3500,
-    "Total Gas 6kg": 1000,
-    "Total Gas 12kg": 3500,
-}
+from django.utils import timezone
+from decimal import Decimal
+import json
 
 @login_required
 def user_dashboard(request):
     if request.method == "POST":
         category = request.POST.get("category")
-        item = request.POST.get("item")
+        item = request.POST.get("item") or request.POST.get("local_item")
+        quantity = request.POST.get("quantity")
+        price = request.POST.get("price")
         payment_method = request.POST.get("payment_method")
 
-        # Convert quantity safely
-        try:
-            quantity = int(request.POST.get("quantity"))
-        except (TypeError, ValueError):
-            quantity = 0
-
-        # Get unit price from full PRICE_LIST
-        unit_price = PRICE_LIST.get(item)
-
-        # Validate all fields
-        if not category or not item or quantity <= 0 or unit_price is None or not payment_method:
-            messages.error(request, "⚠️ Please fill all fields correctly.")
+        if not category or not item or not quantity or not price or not payment_method:
+            messages.error(request, "⚠️ Please fill all required fields.")
             return redirect("user_dashboard")
 
-        # Calculate total price
-        total_price = unit_price * quantity
-
-        # Create Sale
-        Sale.objects.create(
+        Expense.objects.create(
             user=request.user,
             category=category,
             item=item,
-            quantity=quantity,
-            price=total_price,
-            payment_method=payment_method
+            quantity=int(quantity),
+            price=Decimal(price),
+            payment_method=payment_method,
+            date=timezone.now()
         )
-
         messages.success(request, "✅ Order submitted successfully!")
         return redirect("user_dashboard")
 
-    # Display all user sales
-    sales = Sale.objects.filter(user=request.user).order_by("-date")
-    return render(request, "user_dashboard.html", {"sales": sales})
+    expenses = Expense.objects.filter(user=request.user).order_by("-date")
+    
+    return render(request, "user_dashboard.html", {
+        "expenses": expenses,
+        "PRICE_LIST_JSON": json.dumps(PRICE_LIST)  # <--- pass as JSON string
+    })
+
+
+
+
+
+
 
 
 # --------------------------
 # Admin dashboard
 # --------------------------
-@login_required
-def admin_dashboard(request):
-    sales = Sale.objects.all().order_by("-date")
 
-    # ✅ Use price * quantity
-    sales_with_total = sales.annotate(
-        total_price=ExpressionWrapper(F("price") * F("quantity"), output_field=DecimalField())
-    )
-    total_amount = sales_with_total.aggregate(total=Sum("total_price"))["total"] or 0
+from .models import Expense, Sale
+from django.db.models import Sum
+
+def admin_dashboard(request):
+    # Admin expenses
+    expenses = Expense.objects.all().order_by("-date")
+    total_expenses = expenses.aggregate(total=Sum("amount_paid"))["total"] or 0
+
+    # User sales/orders
+    sales = Sale.objects.all().order_by("-date")
+    total_sales = sales.aggregate(total=Sum("price"))["total"] or 0
 
     context = {
-        "sales": sales_with_total,
-        "total_amount": total_amount,
+        "expenses": expenses,
+        "total_expenses": total_expenses,
+        "sales": sales,
+        "total_sales": total_sales,
     }
     return render(request, "admin_dashboard.html", context)
 
 
-# --------------------------
-# Admin PDF report
-# --------------------------
-@login_required
-def admin_dashboard_pdf(request):
-    sales = Sale.objects.all()
-    total_amount = sum(sale.price * sale.quantity for sale in sales)  # ✅ multiply price by quantity
-    template_path = 'admin_dashboard_pdf.html'
-    context = {'sales': sales, 'total_amount': total_amount}
-    
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'filename="sales_report.pdf"'
-    
-    template = get_template(template_path)
-    html = template.render(context)
-    
-    pisa_status = pisa.CreatePDF(html, dest=response)
-    if pisa_status.err:
-        return HttpResponse('We had some errors <pre>' + html + '</pre>')
-    return response
-
 
 # --------------------------
-# Add sale (for testing only)
+# Add sale (user)
 # --------------------------
 @login_required
 def add_sale(request):
@@ -202,7 +180,7 @@ def add_sale(request):
         category = request.POST.get("category")
         item = request.POST.get("item")
         quantity = request.POST.get("quantity")
-        payment_method = request.POST.get("payment_method")  # ✅ add payment method
+        payment_method = request.POST.get("payment_method")
 
         try:
             quantity = int(quantity)
@@ -210,18 +188,142 @@ def add_sale(request):
             quantity = 0
 
         unit_price = PRICE_LIST.get(item)
-
         if category and item and quantity > 0 and unit_price is not None and payment_method:
-            Sale.objects.create(
+            Expense.objects.create(
                 user=request.user,
                 category=category,
                 item=item,
                 quantity=quantity,
-                price=unit_price,          # store unit price
+                price=unit_price * quantity,
                 payment_method=payment_method
             )
             return redirect("user_dashboard")
 
     return render(request, "add_sale.html", {"PRICE_LIST": PRICE_LIST})
 
+# --------------------------
+# Add expense (admin)
+# --------------------------
+@login_required
+def add_expense(request):
+    if request.method == "POST":
+        date = request.POST.get("date")
+        paid_to = request.POST.get("paid_to")
+        charged_to = request.POST.get("charged_to")
+        description = request.POST.get("description")
+        receipt_no = request.POST.get("receipt_no")
+        sponsor = request.POST.get("sponsor")
+        amount_injected = request.POST.get("amount_injected")
+        amount_paid = request.POST.get("amount_paid")
+        bank_charges = request.POST.get("bank_charges")
+        running_balance = request.POST.get("running_balance")
+
+        if not date or not paid_to or not charged_to or not description or not amount_injected or not amount_paid:
+            messages.error(request, "Please fill all required fields.")
+            return redirect("add_expense")
+
+        try:
+            amount_injected = float(amount_injected)
+            amount_paid = float(amount_paid)
+            bank_charges = float(bank_charges) if bank_charges else 0
+            running_balance = float(running_balance) if running_balance else 0
+        except ValueError:
+            messages.error(request, "Amounts must be numbers.")
+            return redirect("add_expense")
+
+        Expense.objects.create(
+            user=request.user,
+            date=date,
+            paid_to=paid_to,
+            charged_to=charged_to,
+            description=description,
+            receipt_no=receipt_no,
+            sponsor=sponsor,
+            amount_injected=amount_injected,
+            amount_paid=amount_paid,
+            bank_charges=bank_charges,
+            running_balance=running_balance
+        )
+
+        messages.success(request, "Expense added successfully!")
+        return redirect("admin_dashboard")
+
+    return render(request, "add_expense.html")
+
+# --------------------------
+# Upload expenses (Excel/CSV)
+# --------------------------
+@login_required
+def upload_expense(request):
+    if request.method == "POST" and request.FILES.get("file"):
+        file = request.FILES["file"]
+        # handle Excel/CSV upload logic here
+        messages.success(request, "Expenses uploaded successfully!")
+        return redirect("admin_dashboard")
+    return render(request, "upload_expense.html")
+
+# --------------------------
+# Admin PDF reports
+# --------------------------
+# myapp/views.py
+from django.http import HttpResponse
+from reportlab.lib.pagesizes import A4
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+from reportlab.lib import colors
+from .models import Expense
+
+def admin_expenses_pdf(request):
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="expenses_report.pdf"'
+
+    # Create PDF
+    pdf = SimpleDocTemplate(response, pagesize=A4)
+    elements = []
+
+    # Table header
+    data = [
+        [
+            "Date", "Paid To", "Charged To", "Description",
+            "Receipt No", "Sponsor", "Amount Injected",
+            "Amount Paid", "Bank Charges", "Running Balance"
+        ]
+    ]
+
+    # Fetch expense data from the database
+    expenses = Expense.objects.all()  # You can filter if needed
+    running_balance = 0
+    for exp in expenses:
+        injected = exp.amount_injected or 0
+        paid = exp.amount_paid or 0
+        charges = exp.bank_charges or 0
+        running_balance += injected - paid - charges
+
+        data.append([
+            exp.date.strftime("%d-%m-%Y") if exp.date else "",
+            exp.paid_to,
+            exp.charged_to,
+            exp.description,
+            exp.receipt_no,
+            exp.sponsor,
+            f"{injected:.2f}",
+            f"{paid:.2f}",
+            f"{charges:.2f}",
+            f"{running_balance:.2f}"
+        ])
+
+    # Create table
+    table = Table(data, repeatRows=1)
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.grey),
+        ('TEXTCOLOR', (0,0), (-1,0), colors.whitesmoke),
+        ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0,0), (-1,0), 10),
+        ('BOTTOMPADDING', (0,0), (-1,0), 8),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.black),
+    ]))
+
+    elements.append(table)
+    pdf.build(elements)
+    return response
 

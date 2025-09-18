@@ -2,41 +2,184 @@
 {% block title %}Admin Dashboard{% endblock %}
 
 {% block content %}
-<h2>Brookelands Water and Gas - Admin Dashboard</h2>
-<a href="{% url 'admin_dashboard_pdf' %}" class="btn btn-primary">📄 Download PDF</a>
+<style>
+/* ===== Page Header ===== */
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 25px;
+}
 
-<table class="table table-bordered table-striped mt-3">
-    <thead class="table-dark">
-        <tr>
-            <th>ID</th>
-            <th>User</th>
-            <th>Category</th>
-            <th>Item</th>
-            <th>Quantity</th>
-            <th>Price (KSh)</th>
-            <th>Date</th>
-            <th>Payment Method</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for sale in sales %}
-        <tr>
-            <td>{{ sale.id }}</td>
-            <td>{{ sale.user.username }}</td>
-            <td>{{ sale.category }}</td>
-            <td>{{ sale.item }}</td>
-            <td>{{ sale.quantity }}</td>
-            <!-- Show price as whole number -->
-            <td>KSh {{ sale.price|floatformat:0 }}</td>
-            <!-- Format date as dd/mm/yy -->
-            <td>{{ sale.date|date:"d/m/y" }}</td>
-            <td>{{ sale.payment_method }}</td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="8" class="text-center">No sales found.</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+.dashboard-header h2 {
+    color: #0a0b0b;
+    font-size: 1.8em;
+}
+
+/* ===== Buttons ===== */
+.btn {
+    background-color: #96e0a7;
+    color: #fff;
+    padding: 10px 18px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: 0.3s;
+}
+.btn:hover { background-color: #218838; }
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+.dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    background-color: #f1f1f1;
+    min-width: 180px;
+    box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+    border-radius: 8px;
+    z-index: 1;
+}
+.dropdown-content a {
+    color: #333;
+    padding: 12px 16px;
+    display: block;
+    text-decoration: none;
+}
+.dropdown-content a:hover { background-color: #e2e2e2; }
+.dropdown:hover .dropdown-content { display: block; }
+
+/* ===== Tables ===== */
+.table-container { margin-bottom: 40px; }
+.table-container h3 {
+    margin-bottom: 15px;
+    font-size: 1.3em;
+    color: #28a745;
+}
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+}
+.table th, .table td {
+    padding: 12px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+.table th { background-color: #7fff6b; color: #000; }
+.table tr:nth-child(even) { background-color: #f0f8f0; }
+.table tr:hover { background-color: #d4edda; }
+
+/* ===== Responsive ===== */
+@media(max-width: 768px) {
+    .dashboard-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+    .table th, .table td { font-size: 0.9em; padding: 8px; }
+}
+</style>
+
+<div class="dashboard-header">
+    <h2>Brookelands Water and Gas - Admin Dashboard</h2>
+
+    <div class="header-actions">
+        <!-- Sales PDF -->
+        <a href="{% url 'admin_dashboard_pdf' %}" class="btn" style="margin-right:10px;">📄 Download Sales PDF</a>
+
+        <!-- Expense Dropdown -->
+        <div class="dropdown">
+            <button>💰 Expense</button>
+            <div class="dropdown-content">
+                <a href="{% url 'add_expense' %}">➕ Add an Expense</a>
+                <a href="{% url 'upload_expense' %}">📤 Upload an Expense</a>
+                <a href="{% url 'admin_dashboard_pdf' %}">📄 Download Expenses PDF</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== Sales Table ===== -->
+<div class="table-container">
+    <h3>📦 Sales / Orders</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>User</th>
+                <th>Category</th>
+                <th>Item</th>
+                <th>Quantity</th>
+                <th>Price (KSh)</th>
+                <th>Date</th>
+                <th>Payment Method</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sale in sales %}
+            <tr>
+                <td>{{ sale.id }}</td>
+                <td>{{ sale.user.username }}</td>
+                <td>{{ sale.category }}</td>
+                <td>{{ sale.item }}</td>
+                <td>{{ sale.quantity }}</td>
+                <td>KSh {{ sale.price|floatformat:0 }}</td>
+                <td>{{ sale.date|date:"d/m/y" }}</td>
+                <td>{{ sale.payment_method }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="8" class="text-center">No sales found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- ===== Expenses Table ===== -->
+<div class="table-container">
+    <h3>💰 Expenses</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Date</th>
+                <th>Paid To</th>
+                <th>Charged To</th>
+                <th>Description</th>
+                <th>Receipt No</th>
+                <th>Sponsor</th>
+                <th>Amount Injected</th>
+                <th>Amount Paid</th>
+                <th>Bank Charges</th>
+                <th>Running Balance</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for exp in expenses %}
+            <tr>
+                <td>{{ exp.id }}</td>
+                <td>{{ exp.date|date:"d/m/Y" }}</td>
+                <td>{{ exp.paid_to }}</td>
+                <td>{{ exp.charged_to }}</td>
+                <td>{{ exp.description }}</td>
+                <td>{{ exp.receipt_no }}</td>
+                <td>{{ exp.sponsor }}</td>
+                <td>{{ exp.amount_injected|floatformat:2 }}</td>
+                <td>{{ exp.amount_paid|floatformat:2 }}</td>
+                <td>{{ exp.bank_charges|floatformat:2 }}</td>
+                <td>{{ exp.running_balance|floatformat:2 }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="11" class="text-center">No expenses found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
 {% endblock %}
