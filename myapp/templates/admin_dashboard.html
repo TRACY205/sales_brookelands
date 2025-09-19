@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Admin Dashboard{% endblock %}
+{% load humanize %}
 
 {% block content %}
 <style>
@@ -88,15 +89,16 @@
 
     <div class="header-actions">
         <!-- Sales PDF -->
-        <a href="{% url 'admin_dashboard_pdf' %}" class="btn" style="margin-right:10px;">📄 Download Sales PDF</a>
+        <a href="{% url 'admin_sales_pdf' %}" class="btn" style="margin-right:10px;">📄 Download Sales Report (PDF)</a>
 
         <!-- Expense Dropdown -->
         <div class="dropdown">
-            <button>💰 Expense</button>
+            <button>💰 Expenses</button>
             <div class="dropdown-content">
                 <a href="{% url 'add_expense' %}">➕ Add an Expense</a>
                 <a href="{% url 'upload_expense' %}">📤 Upload an Expense</a>
-                <a href="{% url 'admin_dashboard_pdf' %}">📄 Download Expenses PDF</a>
+               <a href="{% url 'admin_expenses_excel' %}">📄 Download Expenses Report (Excel)</a>
+
             </div>
         </div>
     </div>
@@ -126,7 +128,7 @@
                 <td>{{ sale.category }}</td>
                 <td>{{ sale.item }}</td>
                 <td>{{ sale.quantity }}</td>
-                <td>KSh {{ sale.price|floatformat:0 }}</td>
+                <td>{{ sale.price|floatformat:0|intcomma }}</td>              
                 <td>{{ sale.date|date:"d/m/y" }}</td>
                 <td>{{ sale.payment_method }}</td>
             </tr>
@@ -168,10 +170,12 @@
                 <td>{{ exp.description }}</td>
                 <td>{{ exp.receipt_no }}</td>
                 <td>{{ exp.sponsor }}</td>
-                <td>{{ exp.amount_injected|floatformat:2 }}</td>
-                <td>{{ exp.amount_paid|floatformat:2 }}</td>
-                <td>{{ exp.bank_charges|floatformat:2 }}</td>
-                <td>{{ exp.running_balance|floatformat:2 }}</td>
+                <td>{{ exp.amount_injected|floatformat:0|intcomma }}</td>
+<td>{{ exp.amount_paid|floatformat:0|intcomma }}</td>
+<td>{{ exp.bank_charges|floatformat:0|intcomma }}</td>
+<td>{{ exp.running_balance|floatformat:0|intcomma }}</td>
+
+               
             </tr>
             {% empty %}
             <tr>
@@ -183,3 +187,4 @@
 </div>
 
 {% endblock %}
+

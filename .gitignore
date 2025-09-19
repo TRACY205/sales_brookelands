@@ -1,13 +1,5 @@
-# Python
 *.pyc
 __pycache__/
-
-# Django
 db.sqlite3
-/static/
-/media/
+/venv/
 
-# Environment
-.env
-venv/
-.env.local

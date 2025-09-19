@@ -1,0 +1,96 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Brookelands Sales Report</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            font-size: 12px; 
+        }
+        h2 { 
+            text-align: center; 
+            color: #007bff; 
+            margin-bottom: 10px; 
+        }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 15px; 
+            table-layout: fixed; /* prevents stretching */
+        }
+        th, td { 
+            border: 1px solid #ccc; 
+            padding: 6px; 
+            text-align: center; 
+            font-size: 11px; 
+            word-wrap: break-word; 
+            overflow-wrap: break-word; 
+        }
+        th { 
+            background: #007bff; 
+            color: white; 
+            font-size: 12px; 
+        }
+        tr:nth-child(even) { 
+            background: #f1f8ff; 
+        }
+        tfoot td { 
+            font-weight: bold; 
+            background: #cce5ff; 
+        }
+        /* Right align numeric values */
+        .num { text-align: right; }
+
+        /* Print/PDF styling */
+        @media print {
+            body { margin: 10px; }
+            h2 { margin-bottom: 5px; font-size: 14px; }
+            table { font-size: 10px; }
+            th, td { padding: 4px; }
+        }
+    </style>
+</head>
+<body>
+    <h2>📊 Brookelands Sales Report</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>User</th>
+                <th>Category</th>
+                <th>Item</th>
+                <th>Qty</th>
+                <th>Price (KSh)</th>
+                <th>Date</th>
+                <th>Payment</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sale in sales %}
+            <tr>
+                <td>{{ sale.id }}</td>
+                <td>{{ sale.user.username }}</td>
+                <td>{{ sale.category }}</td>
+                <td>{{ sale.item }}</td>
+                <td class="num">{{ sale.quantity }}</td>
+                <td class="num">{{ sale.price|floatformat:0|intcomma }}</td>
+                <td>{{ sale.date|date:"d/m/Y" }}</td>
+                <td>{{ sale.payment_method }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="8">No sales records found.</td></tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="8" class="num">
+                    Total Sales: <b>KSh {{ total_amount|floatformat:0|intcomma }}</b>
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+</body>
+</html>

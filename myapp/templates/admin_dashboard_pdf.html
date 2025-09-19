@@ -1,78 +1,99 @@
+{% load humanize %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Brookelands Sales Report (PDF)</title>
+    <title>Brookelands Expenses Report</title>
     <style>
-        body {
-            font-family: DejaVu Sans, sans-serif;
-            font-size: 12px;
-            margin: 20px;
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            font-size: 12px; 
         }
-        h2 {
-            text-align: center;
-            margin-bottom: 15px;
+        h2 { 
+            text-align: center; 
+            color: #28a745; 
+            margin-bottom: 10px; 
         }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 15px; 
+            table-layout: fixed; 
         }
-        th, td {
-            border: 1px solid #333;
-            padding: 6px;
-            text-align: center;
+        th, td { 
+            border: 1px solid #ccc; 
+            padding: 6px; 
+            text-align: center; 
+            font-size: 11px; 
+            word-wrap: break-word; 
+            overflow-wrap: break-word; 
         }
-        th {
-            background: #ddd;
+        th { 
+            background: #28a745; 
+            color: white; 
+            font-size: 12px; 
         }
-        tfoot td {
-            font-weight: bold;
-            background: #f2f2f2;
+        tr:nth-child(even) { 
+            background: #f9f9f9; 
+        }
+        tfoot td { 
+            font-weight: bold; 
+            background: #d4edda; 
+        }
+        /* Print styling */
+        @media print {
+            body { margin: 10px; }
+            h2 { margin-bottom: 5px; }
+            table { font-size: 10px; }
+            th, td { padding: 4px; }
         }
     </style>
 </head>
 <body>
-    <h2>💧 Sales Report</h2>
+    <h2>💧 Brookelands Expenses Report</h2>
     <table>
         <thead>
             <tr>
-                <th>ID</th>
-                <th>User</th>
-                <th>Category</th>
-                <th>Item</th>
-                <th>Qty</th>
-                <th>Unit Price (KSh)</th>
-                <th>Total (KSh)</th>
                 <th>Date</th>
-                <th>Payment Method</th> <!-- ✅ Added -->
+                <th>Paid To</th>
+                <th>Charged To</th>
+                <th>Description</th>
+                <th>Receipt No</th>
+                <th>Sponsor</th>
+                <th>Amount Injected</th>
+                <th>Amount Paid</th>
+                <th>Bank Charges</th>
             </tr>
         </thead>
         <tbody>
-            {% for sale in sales %}
+            {% for exp in expenses %}
             <tr>
-                <td>{{ sale.id }}</td>
-                <td>{{ sale.user.username }}</td>
-                <td>{{ sale.category }}</td>
-                <td>{{ sale.item }}</td>
-                <td>{{ sale.quantity }}</td>
-                <td>KSh {{ sale.price|floatformat:0 }}</td>
-                <td>KSh {{ sale.total_price|floatformat:0 }}</td>
-                <td>{{ sale.date|date:"d/m/y" }}</td>
-                <td>{{ sale.payment_method }}</td> <!-- ✅ Added -->
+                <td>{{ exp.date|date:"d/m/Y" }}</td>
+                <td>{{ exp.paid_to }}</td>
+                <td>{{ exp.charged_to }}</td>
+                <td>{{ exp.description }}</td>
+                <td>{{ exp.receipt_no }}</td>
+                <td>{{ exp.sponsor }}</td>
+                <td style="text-align: right;">{{ exp.amount_injected|floatformat:2|intcomma }}</td>
+                <td style="text-align: right;">{{ exp.amount_paid|floatformat:2|intcomma }}</td>
+                <td style="text-align: right;">{{ exp.bank_charges|floatformat:2|intcomma }}</td>
             </tr>
             {% empty %}
-            <tr>
-                <td colspan="9">No sales available.</td>
-            </tr>
+            <tr><td colspan="9">No expense records found.</td></tr>
             {% endfor %}
         </tbody>
         <tfoot>
             <tr>
-                <td colspan="9">Total Records: {{ sales|length }}</td>
+                <td colspan="6">TOTALS</td>
+                <td style="text-align: right;">{{ total_injected|floatformat:2|intcomma }}</td>
+                <td style="text-align: right;">{{ total_paid|floatformat:2|intcomma }}</td>
+                <td style="text-align: right;">{{ total_charges|floatformat:2|intcomma }}</td>
             </tr>
             <tr>
-                <td colspan="9">Total Sales: KSh {{ total_amount|floatformat:0 }}</td>
+                <td colspan="9" style="text-align: right;">
+                    Running Balance: <b>{{ running_balance|floatformat:2|intcomma }}</b>
+                </td>
             </tr>
         </tfoot>
     </table>

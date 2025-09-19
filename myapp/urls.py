@@ -10,15 +10,15 @@ urlpatterns = [
     path("logout/", views.logout_view, name="logout"),
 
     # Dashboards
-    path("dashboard/", views.user_dashboard, name="user_dashboard"),       # User dashboard
-    path("admin-dashboard/", views.admin_dashboard, name="admin_dashboard"),  # Admin dashboard
+    path("dashboard/", views.user_dashboard, name="user_dashboard"),
+    path("admin-dashboard/", views.admin_dashboard, name="admin_dashboard"),
 
-    # Sales & Expenses
-    path("add-sale/", views.add_sale, name="add_sale"),
-    path("add-expense/", views.add_expense, name="add_expense"),
-    path("upload-expense/", views.upload_expense, name="upload_expense"),
+    # Expenses
+    path("add-expense/", views.add_expense, name="add_expense"),          # for adding new expense
+    path("upload-expense/", views.upload_expense, name="upload_expense"), # for uploading via Excel
+    path("admin-dashboard/expenses-excel/", views.admin_expenses_excel, name="admin_expenses_excel"), # export
 
-    # PDF Reports
-    path("admin-dashboard/pdf/", views.admin_expenses_pdf, name="admin_dashboard_pdf"),
+    # Sales
+    path("add-sale/", views.add_sale, name="add_sale"),                   # for adding new sale
+    path("admin-dashboard/sales-pdf/", views.admin_sales_pdf, name="admin_sales_pdf"),  # export PDF
 ]
-
