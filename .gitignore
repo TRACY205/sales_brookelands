@@ -1,5 +1,23 @@
-*.pyc
+# Python cache
 __pycache__/
-db.sqlite3
-/venv/
+*.pyc
 
+# SQLite database
+db.sqlite3
+
+# Virtual environment
+.venv/
+venv/
+
+# Environment variables
+.env
+
+# Django stuff
+*.log
+*.pot
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+*.mo
+*.egg-info
