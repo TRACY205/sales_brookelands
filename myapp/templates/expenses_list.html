@@ -1,0 +1,41 @@
+<table class="table-auto w-full border-collapse border border-gray-400">
+    <thead>
+        <tr class="bg-gray-200">
+            <th>ID</th>
+            <th>Date</th>
+            <th>Paid To</th>
+            <th>Charged To</th>
+            <th>Description</th>
+            <th>Receipt No</th>
+            <th>Sponsor</th>
+            <th>Amount Injected</th>
+            <th>Amount Paid</th>
+            <th>Bank Charges</th>
+            <th>Running Balance</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for expense in expenses %}
+        <tr>
+            <td>{{ expense.id }}</td>
+            <td>{{ expense.date }}</td>
+            <td>{{ expense.paid_to }}</td>
+            <td>{{ expense.charged_to }}</td>
+            <td>{{ expense.description }}</td>
+            <td>{{ expense.receipt_no }}</td>
+            <td>{{ expense.sponsor }}</td>
+            <td>{{ expense.amount_injected }}</td>
+            <td>{{ expense.amount_paid }}</td>
+            <td>{{ expense.bank_charges }}</td>
+            <td>{{ expense.running_balance }}</td>
+            <td>
+                <a href="{% url 'edit_expense' expense.id %}" 
+                   class="bg-blue-500 text-white px-3 py-1 rounded">
+                   Edit
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

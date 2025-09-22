@@ -61,6 +61,12 @@
     font-size: 1.3em;
     color: #28a745;
 }
+.table th, .table td {
+    padding: 12px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
 .table {
     width: 100%;
     border-collapse: collapse;
@@ -82,6 +88,23 @@
     .dashboard-header { flex-direction: column; align-items: flex-start; gap: 10px; }
     .table th, .table td { font-size: 0.9em; padding: 8px; }
 }
+
+/* ===== Action Buttons ===== */
+.action-btn {
+    display: inline-block;
+    background-color: #2563eb; /* nice blue */
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.9em;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.3s, transform 0.2s;
+}
+.action-btn:hover {
+    background-color: #1d4ed8;
+    transform: scale(1.05);
+}
 </style>
 
 <div class="dashboard-header">
@@ -89,7 +112,10 @@
 
     <div class="header-actions">
         <!-- Sales PDF -->
-        <a href="{% url 'admin_sales_pdf' %}" class="btn" style="margin-right:10px;">📄 Download Sales Report (PDF)</a>
+        <a href="{% url 'admin_sales_excel' %}" class="btn" style="margin-right:10px;">
+    📊 Download Sales Report (Excel)
+</a>
+
 
         <!-- Expense Dropdown -->
         <div class="dropdown">
@@ -118,6 +144,7 @@
                 <th>Price (KSh)</th>
                 <th>Date</th>
                 <th>Payment Method</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -131,10 +158,11 @@
                 <td>{{ sale.price|floatformat:0|intcomma }}</td>              
                 <td>{{ sale.date|date:"d/m/y" }}</td>
                 <td>{{ sale.payment_method }}</td>
+                <td><!-- you can add sale actions here later --></td>
             </tr>
             {% empty %}
             <tr>
-                <td colspan="8" class="text-center">No sales found.</td>
+                <td colspan="9" class="text-center">No sales found.</td>
             </tr>
             {% endfor %}
         </tbody>
@@ -158,6 +186,7 @@
                 <th>Amount Paid</th>
                 <th>Bank Charges</th>
                 <th>Running Balance</th>
+                <th>Actions</th> <!-- ✅ new -->
             </tr>
         </thead>
         <tbody>
@@ -171,15 +200,16 @@
                 <td>{{ exp.receipt_no }}</td>
                 <td>{{ exp.sponsor }}</td>
                 <td>{{ exp.amount_injected|floatformat:0|intcomma }}</td>
-<td>{{ exp.amount_paid|floatformat:0|intcomma }}</td>
-<td>{{ exp.bank_charges|floatformat:0|intcomma }}</td>
-<td>{{ exp.running_balance|floatformat:0|intcomma }}</td>
-
-               
+                <td>{{ exp.amount_paid|floatformat:0|intcomma }}</td>
+                <td>{{ exp.bank_charges|floatformat:0|intcomma }}</td>
+                <td>{{ exp.running_balance|floatformat:0|intcomma }}</td>
+                <td>
+                    <a href="{% url 'edit_expense' exp.id %}" class="action-btn">✏️ Edit</a>
+                </td>
             </tr>
             {% empty %}
             <tr>
-                <td colspan="11" class="text-center">No expenses found.</td>
+                <td colspan="12" class="text-center">No expenses found.</td>
             </tr>
             {% endfor %}
         </tbody>
@@ -187,4 +217,3 @@
 </div>
 
 {% endblock %}
-

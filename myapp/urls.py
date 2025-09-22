@@ -20,5 +20,13 @@ urlpatterns = [
 
     # Sales
     path("add-sale/", views.add_sale, name="add_sale"),                   # for adding new sale
-    path("admin-dashboard/sales-pdf/", views.admin_sales_pdf, name="admin_sales_pdf"),  # export PDF
+    path("admin-sales-excel/", views.admin_sales_excel, name="admin_sales_excel"),
+
+  
+     path("orders/<int:pk>/edit/", views.edit_order, name="edit_order"),
+     path("dashboard/", views.user_dashboard, name="dashboard"),
+       path("expenses/", views.expenses_list, name="expenses_list"),
+    path("expenses/<int:pk>/edit/", views.edit_expense, name="edit_expense"),
+
+
 ]

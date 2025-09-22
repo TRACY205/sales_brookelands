@@ -342,64 +342,112 @@ def admin_expenses_excel(request):
     wb.save(response)
     return response
 
-# ------------------- PDF Sales -------------------
+# ------------------- Excel Sales with Totals by Payment Method -------------------
 from django.http import HttpResponse
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
-from reportlab.lib import colors
-from reportlab.lib.pagesizes import A4
-from reportlab.lib.styles import getSampleStyleSheet
+from openpyxl import Workbook
+from openpyxl.styles import Font
 from .models import Sale
 
-def admin_sales_pdf(request):
-    # Create HTTP response
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename="brookelands_sales_report.pdf"'
+def admin_sales_excel(request):
+    # Create workbook and sheet
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Sales Report"
 
-    # Setup PDF document
-    doc = SimpleDocTemplate(response, pagesize=A4)
-    elements = []
+    # Headers
+    headers = ["Date", "Item", "Quantity", "Price", "Payment Method"]
+    ws.append(headers)
 
-    # Styles
-    styles = getSampleStyleSheet()
-    title_style = styles['Heading1']
-    title_style.alignment = 1  # center
-
-    # Title
-    elements.append(Paragraph("Brookelands Sales Report", title_style))
-    elements.append(Spacer(1, 20))  # Space below title
-
-    # Table headers
-    data = [["Date", "Item", "Quantity", "Price"]]
-
-    # Table content
+    # Sales data
     sales = Sale.objects.all().order_by("date")
+
+    # Track totals
     total_price = 0
+    total_cash = 0
+    total_mpesa = 0
+
     for s in sales:
-        data.append([
-          s.date.strftime("%d/%m/%y"),
+        ws.append([
+            s.date.strftime("%d/%m/%y"),
             s.item,
             s.quantity,
             float(s.price),
+            s.payment_method,
         ])
         total_price += float(s.price)
 
-    # Add totals row
-    data.append(["", "", "TOTAL", total_price])
+        if s.payment_method.lower() == "cash":
+            total_cash += float(s.price)
+        elif s.payment_method.lower() == "mpesa":
+            total_mpesa += float(s.price)
 
-    # Create table
-    table = Table(data, colWidths=[100, 200, 80, 80])
-    table.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,0), colors.gray),  # Header row
-        ('TEXTCOLOR', (0,0), (-1,0), colors.whitesmoke),
-        ('ALIGN', (0,0), (-1,-1), 'CENTER'),
-        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
-        ('GRID', (0,0), (-1,-1), 1, colors.black),
-        ('BACKGROUND', (-2,-1), (-1,-1), colors.lightgrey),  # Totals row
-        ('FONTNAME', (-2,-1), (-1,-1), 'Helvetica-Bold'),
-    ]))
+    # Add empty row for spacing
+    ws.append([])
 
-    elements.append(table)
+    # Add totals rows
+    ws.append(["", "", "TOTAL Cash", total_cash])
+    ws.append(["", "", "TOTAL Mpesa", total_mpesa])
+    ws.append(["", "", "GRAND TOTAL", total_price])
 
-    # Build PDF
-    doc.build(elements)
+    # Make totals bold
+    for row in range(ws.max_row - 2, ws.max_row + 1):
+        for cell in ws[row]:
+            cell.font = Font(bold=True)
+
+    # Response
+    response = HttpResponse(
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    response["Content-Disposition"] = 'attachment; filename="brookelands_sales_report.xlsx"'
+
+    wb.save(response)
     return response
+
+
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from .models import Sale
+from .forms import SaleForm
+
+
+@login_required
+def edit_order(request, pk):
+    sale = get_object_or_404(Sale, pk=pk)
+
+    if request.method == "POST":
+        form = SaleForm(request.POST, instance=sale)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Order updated successfully!")
+            return redirect("dashboard")
+    else:
+        form = SaleForm(instance=sale)
+
+    return render(request, "edit_order.html", {"form": form, "sale": sale})
+
+
+
+# myapp/views.py
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import Expense
+from .forms import ExpenseForm
+
+def expenses_list(request):
+    expenses = Expense.objects.all()
+    return render(request, "expenses_list.html", {"expenses": expenses})
+
+def edit_expense(request, pk):
+    expense = get_object_or_404(Expense, pk=pk)
+    if request.method == "POST":
+        form = ExpenseForm(request.POST, instance=expense)
+        if form.is_valid():
+            form.save()
+            return redirect("admin_dashboard")
+
+    else:
+        form = ExpenseForm(instance=expense)
+    return render(request, "edit_expense.html", {"form": form, "expense": expense})
+
