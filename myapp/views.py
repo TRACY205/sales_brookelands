@@ -18,7 +18,7 @@ import json
 # --------------------------
 PRICE_LIST = {
     "Water": {
-        "1L": 10,
+        "1L (R)": 10,
         "1L + B": 30,
         "1L (R)": 10,
         "5L (R)": 70,
@@ -343,11 +343,6 @@ def admin_expenses_excel(request):
     return response
 
 # ------------------- Excel Sales with Totals by Payment Method -------------------
-from django.http import HttpResponse
-from openpyxl import Workbook
-from openpyxl.styles import Font
-from .models import Sale
-
 def admin_sales_excel(request):
     # Create workbook and sheet
     wb = Workbook()
@@ -355,7 +350,7 @@ def admin_sales_excel(request):
     ws.title = "Sales Report"
 
     # Headers
-    headers = ["Date", "Item", "Quantity", "Price", "Payment Method"]
+    headers = ["Date", "Item", "Quantity (L)", "Price", "Payment Method"]
     ws.append(headers)
 
     # Sales data
@@ -365,6 +360,7 @@ def admin_sales_excel(request):
     total_price = 0
     total_cash = 0
     total_mpesa = 0
+    total_r_liters = 0  # 👈 only sum quantities with (R)
 
     for s in sales:
         ws.append([
@@ -372,9 +368,13 @@ def admin_sales_excel(request):
             s.item,
             s.quantity,
             float(s.price),
-            s.payment_method,
+            f"{s.payment_method} ({s.payment_status})",  # 👈 CHANGE HERE
         ])
         total_price += float(s.price)
+
+        # 👇 only add to liters if item contains "(R)"
+        if "(R)" in str(s.item):
+            total_r_liters += s.quantity
 
         if s.payment_method.lower() == "cash":
             total_cash += float(s.price)
@@ -384,25 +384,18 @@ def admin_sales_excel(request):
     # Add empty row for spacing
     ws.append([])
 
-    # Add totals rows
-    ws.append(["", "", "TOTAL Cash", total_cash])
-    ws.append(["", "", "TOTAL Mpesa", total_mpesa])
-    ws.append(["", "", "GRAND TOTAL", total_price])
+    # Totals row
+    ws.append(["TOTAL (R only)", "", total_r_liters, total_price, ""])
+    ws.append(["", "Cash Total", "", total_cash, ""])
+    ws.append(["", "MPesa Total", "", total_mpesa, ""])
 
-    # Make totals bold
-    for row in range(ws.max_row - 2, ws.max_row + 1):
-        for cell in ws[row]:
-            cell.font = Font(bold=True)
-
-    # Response
+    # Save response
     response = HttpResponse(
         content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
-    response["Content-Disposition"] = 'attachment; filename="brookelands_sales_report.xlsx"'
-
+    response["Content-Disposition"] = 'attachment; filename="sales_report.xlsx"'
     wb.save(response)
     return response
-
 
 
 
@@ -451,3 +444,21 @@ def edit_expense(request, pk):
         form = ExpenseForm(instance=expense)
     return render(request, "edit_expense.html", {"form": form, "expense": expense})
 
+
+
+
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import Sale
+from .forms import SaleForm  # make sure you have this form
+
+@login_required
+def edit_sale(request, sale_id):
+    sale = get_object_or_404(Sale, id=sale_id)
+    if request.method == "POST":
+        form = SaleForm(request.POST, instance=sale)
+        if form.is_valid():
+            form.save()
+            return redirect('admin_dashboard')  # back to dashboard
+    else:
+        form = SaleForm(instance=sale)
+    return render(request, "edit_sale.html", {"form": form, "sale": sale})

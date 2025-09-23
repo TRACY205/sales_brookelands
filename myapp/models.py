@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 class Expense(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -21,14 +22,21 @@ class Expense(models.Model):
 # ---------------------------
 # New Sale model for user orders
 class Sale(models.Model):
+    PAYMENT_STATUS = [
+        ("Paid", "Paid"),
+        ("Not Paid", "Not Paid"),
+    ]
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     category = models.CharField(max_length=50)
     item = models.CharField(max_length=255)
     quantity = models.PositiveIntegerField()
     price = models.DecimalField(max_digits=12, decimal_places=2)
     payment_method = models.CharField(max_length=50)
-    date = models.DateTimeField(auto_now_add=True)
+    date = models.DateTimeField(default=timezone.now)  # ✅ editable
+    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS, default="Not Paid")  # ✅ new field
 
     def __str__(self):
-        return f"{self.user.username} - {self.item} - {self.price}"
+        return f"{self.user.username} - {self.item} - {self.price} ({self.payment_status})"
+
 

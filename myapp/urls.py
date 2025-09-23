@@ -27,6 +27,7 @@ urlpatterns = [
      path("dashboard/", views.user_dashboard, name="dashboard"),
        path("expenses/", views.expenses_list, name="expenses_list"),
     path("expenses/<int:pk>/edit/", views.edit_expense, name="edit_expense"),
+      path("edit-sale/<int:sale_id>/", views.edit_sale, name="edit_sale"),
 
 
 ]

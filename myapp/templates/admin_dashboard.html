@@ -111,11 +111,10 @@
     <h2>Brookelands Water and Gas - Admin Dashboard</h2>
 
     <div class="header-actions">
-        <!-- Sales PDF -->
+        <!-- Sales Excel -->
         <a href="{% url 'admin_sales_excel' %}" class="btn" style="margin-right:10px;">
-    📊 Download Sales Report (Excel)
-</a>
-
+            📊 Download Sales Report (Excel)
+        </a>
 
         <!-- Expense Dropdown -->
         <div class="dropdown">
@@ -123,13 +122,13 @@
             <div class="dropdown-content">
                 <a href="{% url 'add_expense' %}">➕ Add an Expense</a>
                 <a href="{% url 'upload_expense' %}">📤 Upload an Expense</a>
-               <a href="{% url 'admin_expenses_excel' %}">📄 Download Expenses Report (Excel)</a>
-
+                <a href="{% url 'admin_expenses_excel' %}">📄 Download Expenses Report (Excel)</a>
             </div>
         </div>
     </div>
 </div>
 
+<!-- ===== Sales Table ===== -->
 <!-- ===== Sales Table ===== -->
 <div class="table-container">
     <h3>📦 Sales / Orders</h3>
@@ -157,8 +156,10 @@
                 <td>{{ sale.quantity }}</td>
                 <td>{{ sale.price|floatformat:0|intcomma }}</td>              
                 <td>{{ sale.date|date:"d/m/y" }}</td>
-                <td>{{ sale.payment_method }}</td>
-                <td><!-- you can add sale actions here later --></td>
+               <td>{{ sale.payment_method }} ({{ sale.payment_status }})</td>
+                <td>
+                    <a href="{% url 'edit_sale' sale.id %}" class="action-btn">✏️ Edit</a>
+                </td>
             </tr>
             {% empty %}
             <tr>
@@ -168,6 +169,7 @@
         </tbody>
     </table>
 </div>
+
 
 <!-- ===== Expenses Table ===== -->
 <div class="table-container">
@@ -186,7 +188,7 @@
                 <th>Amount Paid</th>
                 <th>Bank Charges</th>
                 <th>Running Balance</th>
-                <th>Actions</th> <!-- ✅ new -->
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>

@@ -58,6 +58,7 @@ h3::before { content: "✨ "; }
     padding: 10px 20px;
     border-radius: 50px;
     transition: all 0.3s ease;
+    display: inline-block;
 }
 .top-links a.register { background: #28a745; color: #fff; }
 .top-links a.register:hover { background: #218838; transform: scale(1.05); }
@@ -106,17 +107,22 @@ h3::before { content: "✨ "; }
 .order-form button:hover { background: #218838; transform: scale(1.05); }
 
 /* ===== Orders Table ===== */
+.table-wrapper {
+    overflow-x: auto; /* 👈 enables scrolling on small screens */
+}
 .orders-table {
     width: 100%;
     border-collapse: collapse;
     border-radius: 20px;
     overflow: hidden;
     box-shadow: 0 8px 18px rgba(0,0,0,0.05);
+    min-width: 600px; /* 👈 keeps table usable */
 }
 .orders-table th, .orders-table td {
     padding: 14px;
     border: 1px solid #eee;
     text-align: left;
+    white-space: nowrap; /* 👈 prevents wrapping */
 }
 .orders-table th { background: #28a745; color: #fff; font-size: 1em; }
 .orders-table tr:nth-child(even) { background: #e9f7ef; }
@@ -124,22 +130,31 @@ h3::before { content: "✨ "; }
 .orders-table .empty { text-align: center; padding: 15px; color: #777; font-style: italic; }
 
 /* ===== Payment Options ===== */
+.payment-options {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+}
 .payment-options label {
-    margin-right: 25px;
     font-weight: 600;
     cursor: pointer;
 }
-.payment-options input { margin-right: 8px; }
-
-/* ===== Placeholder Styling ===== */
-input::placeholder { color: #aaa; font-style: italic; }
+.payment-options input { margin-right: 6px; }
 
 /* ===== Responsive ===== */
 @media(max-width: 768px) {
+    .dashboard-container { padding: 20px; margin: 20px auto; }
     .order-form { padding: 20px; }
     .order-form button { font-size: 1em; }
-    .orders-table th, .orders-table td { font-size: 0.9em; padding: 10px; }
-    .dashboard-container { padding: 20px; margin: 20px auto; }
+    .orders-table th, .orders-table td { font-size: 0.85em; padding: 8px; }
+}
+@media(max-width: 480px) {
+    h2 { font-size: 1.5em; }
+    h3 { font-size: 1em; }
+    .order-form label { font-size: 0.9em; }
+    .order-form input, .order-form select { font-size: 0.9em; padding: 10px; }
+    .order-form button { font-size: 1em; padding: 12px; }
 }
 </style>
 
@@ -189,10 +204,12 @@ input::placeholder { color: #aaa; font-style: italic; }
             <label>Total Price</label>
             <input type="text" id="price" name="price" placeholder="Automatically calculated">
 
-            <label>Payment Method</label>
+            <label>Payment</label>
             <div class="payment-options">
                 <label><input type="radio" name="payment_method" value="Cash" required> 💵 Cash</label>
                 <label><input type="radio" name="payment_method" value="MPesa" required> 📱 MPesa</label>
+                <label><input type="radio" name="payment_status" value="Paid"> ✅ Paid</label>
+                <label><input type="radio" name="payment_status" value="Not Paid"> ❌ Not Paid</label>
             </div>
 
             <button type="submit">✅ Submit Order</button>
@@ -201,40 +218,42 @@ input::placeholder { color: #aaa; font-style: italic; }
 
     <!-- ===== Previous Orders ===== -->
     <h3>📋 Your Previous Orders</h3>
-<table class="orders-table">
-    <tr>
-        <th>ID</th>
-        <th>Category</th>
-        <th>Item</th>
-        <th>Quantity</th>
-        <th>Price</th>
-        <th>Date</th>
-        <th>Payment</th>
-        <th>Action</th>  <!-- 👈 new column -->
-    </tr>
-    {% for sale in sales %}
-    <tr>
-        <td>{{ sale.id }}</td>
-        <td>{{ sale.category }}</td>
-        <td>{{ sale.item }}</td>
-        <td>{{ sale.quantity }}</td>
-        <td>KSh {{ sale.price|floatformat:0|intcomma }}</td>
-        <td>{{ sale.date|date:"d/m/y H:i" }}</td>
-        <td>{{ sale.payment_method }}</td>
-        <td>
-            <a href="{% url 'edit_order' sale.id %}" 
-               class="bg-blue-500 hover:bg-blue-700 text-white px-3 py-1 rounded">
-               ✏️ Edit
-            </a>
-        </td>
-    </tr>
-    {% empty %}
-    <tr>
-        <td colspan="8" class="empty">No orders yet.</td>
-    </tr>
-    {% endfor %}
-</table>
-
+    <div class="table-wrapper">
+        <table class="orders-table">
+            <tr>
+                <th>ID</th>
+                <th>Category</th>
+                <th>Item</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Date</th>
+                <th>Payment</th>
+                <th>Action</th>
+            </tr>
+            {% for sale in sales %}
+            <tr>
+                <td>{{ sale.id }}</td>
+                <td>{{ sale.category }}</td>
+                <td>{{ sale.item }}</td>
+                <td>{{ sale.quantity }}</td>
+                <td>KSh {{ sale.price|floatformat:0|intcomma }}</td>
+                <td>{{ sale.date|date:"d/m/y H:i" }}</td>
+                <td>{{ sale.payment_method }} ({{ sale.payment_status }})</td>
+                <td>
+                    <a href="{% url 'edit_order' sale.id %}" 
+                       class="bg-blue-500 hover:bg-blue-700 text-white px-3 py-1 rounded">
+                       ✏️ Edit
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="8" class="empty">No orders yet.</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
 
 <!-- ===== JS for Dynamic Pricing ===== -->
 <script>
@@ -296,3 +315,4 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 </script>
 {% endblock %}
+
