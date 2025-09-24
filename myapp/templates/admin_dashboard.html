@@ -112,9 +112,9 @@
 
     <div class="header-actions">
         <!-- Sales Excel -->
-        <a href="{% url 'admin_sales_excel' %}" class="btn" style="margin-right:10px;">
-            📊 Download Sales Report (Excel)
-        </a>
+       <a href="{% url 'sales_report' %}" class="btn" style="margin-right:10px;">
+    📊 View Sales Report
+</a>
 
         <!-- Expense Dropdown -->
         <div class="dropdown">
@@ -129,93 +129,111 @@
 </div>
 
 <!-- ===== Sales Table ===== -->
-<!-- ===== Sales Table ===== -->
 <div class="table-container">
     <h3>📦 Sales / Orders</h3>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>User</th>
-                <th>Category</th>
-                <th>Item</th>
-                <th>Quantity</th>
-                <th>Price (KSh)</th>
-                <th>Date</th>
-                <th>Payment Method</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for sale in sales %}
-            <tr>
-                <td>{{ sale.id }}</td>
-                <td>{{ sale.user.username }}</td>
-                <td>{{ sale.category }}</td>
-                <td>{{ sale.item }}</td>
-                <td>{{ sale.quantity }}</td>
-                <td>{{ sale.price|floatformat:0|intcomma }}</td>              
-                <td>{{ sale.date|date:"d/m/y" }}</td>
-               <td>{{ sale.payment_method }} ({{ sale.payment_status }})</td>
-                <td>
-                    <a href="{% url 'edit_sale' sale.id %}" class="action-btn">✏️ Edit</a>
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="9" class="text-center">No sales found.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <form method="post" action="{% url 'delete_sales' %}">
+        {% csrf_token %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Select</th>
+                    <th>ID</th>
+                    <th>User</th>
+                    <th>Category</th>
+                    <th>Item</th>
+                    <th>Quantity</th>
+                    <th>Price (KSh)</th>
+                    <th>Date</th>
+                    <th>Payment Method</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sale in sales %}
+                <tr>
+                    <td><input type="checkbox" name="selected_sales" value="{{ sale.id }}"></td>
+                    <td>{{ sale.id }}</td>
+                    <td>{{ sale.user.username }}</td>
+                    <td>{{ sale.category }}</td>
+                    <td>{{ sale.item }}</td>
+                    <td>{{ sale.quantity }}</td>
+                    <td>{{ sale.price|floatformat:0|intcomma }}</td>
+                    <td>{{ sale.date|date:"d/m/y" }}</td>
+                    <td>{{ sale.payment_method }} ({{ sale.payment_status }})</td>
+                    <td>
+                        <a href="{% url 'edit_sale' sale.id %}" class="action-btn">✏️ Edit</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="10" class="text-center">No sales found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <button type="submit" 
+                onclick="return confirm('Are you sure you want to delete the selected sales?')" 
+                style="margin-top:15px; background:#dc3545; color:#fff; border:none; padding:10px 20px; border-radius:8px; cursor:pointer;">
+            🗑️ Delete Selected Sales
+        </button>
+    </form>
 </div>
 
 
 <!-- ===== Expenses Table ===== -->
 <div class="table-container">
     <h3>💰 Expenses</h3>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Date</th>
-                <th>Paid To</th>
-                <th>Charged To</th>
-                <th>Description</th>
-                <th>Receipt No</th>
-                <th>Sponsor</th>
-                <th>Amount Injected</th>
-                <th>Amount Paid</th>
-                <th>Bank Charges</th>
-                <th>Running Balance</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for exp in expenses %}
-            <tr>
-                <td>{{ exp.id }}</td>
-                <td>{{ exp.date|date:"d/m/Y" }}</td>
-                <td>{{ exp.paid_to }}</td>
-                <td>{{ exp.charged_to }}</td>
-                <td>{{ exp.description }}</td>
-                <td>{{ exp.receipt_no }}</td>
-                <td>{{ exp.sponsor }}</td>
-                <td>{{ exp.amount_injected|floatformat:0|intcomma }}</td>
-                <td>{{ exp.amount_paid|floatformat:0|intcomma }}</td>
-                <td>{{ exp.bank_charges|floatformat:0|intcomma }}</td>
-                <td>{{ exp.running_balance|floatformat:0|intcomma }}</td>
-                <td>
-                    <a href="{% url 'edit_expense' exp.id %}" class="action-btn">✏️ Edit</a>
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="12" class="text-center">No expenses found.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <form method="post" action="{% url 'delete_expenses' %}">
+        {% csrf_token %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Select</th>
+                    <th>ID</th>
+                    <th>Date</th>
+                    <th>Paid To</th>
+                    <th>Charged To</th>
+                    <th>Description</th>
+                    <th>Receipt No</th>
+                    <th>Sponsor</th>
+                    <th>Amount Injected</th>
+                    <th>Amount Paid</th>
+                    <th>Bank Charges</th>
+                    <th>Running Balance</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for exp in expenses %}
+                <tr>
+                    <td><input type="checkbox" name="selected_expenses" value="{{ exp.id }}"></td>
+                    <td>{{ exp.id }}</td>
+                    <td>{{ exp.date|date:"d/m/Y" }}</td>
+                    <td>{{ exp.paid_to }}</td>
+                    <td>{{ exp.charged_to }}</td>
+                    <td>{{ exp.description }}</td>
+                    <td>{{ exp.receipt_no }}</td>
+                    <td>{{ exp.sponsor }}</td>
+                    <td>{{ exp.amount_injected|floatformat:0|intcomma }}</td>
+                    <td>{{ exp.amount_paid|floatformat:0|intcomma }}</td>
+                    <td>{{ exp.bank_charges|floatformat:0|intcomma }}</td>
+                    <td>{{ exp.running_balance|floatformat:0|intcomma }}</td>
+                    <td>
+                        <a href="{% url 'edit_expense' exp.id %}" class="action-btn">✏️ Edit</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="13" class="text-center">No expenses found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <button type="submit" 
+                onclick="return confirm('Are you sure you want to delete the selected expenses?')" 
+                style="margin-top:15px; background:#dc3545; color:#fff; border:none; padding:10px 20px; border-radius:8px; cursor:pointer;">
+            🗑️ Delete Selected Expenses
+        </button>
+    </form>
 </div>
-
 {% endblock %}

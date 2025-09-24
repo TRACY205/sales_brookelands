@@ -5,56 +5,82 @@
     <meta charset="UTF-8">
     <title>Brookelands Sales Report</title>
     <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            margin: 20px; 
-            font-size: 12px; 
+        body { font-family: Arial, sans-serif; margin: 20px; font-size: 13px; }
+        h2 { text-align: center; color: #007bff; margin-bottom: 15px; }
+
+        .top-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
         }
-        h2 { 
-            text-align: center; 
-            color: #007bff; 
-            margin-bottom: 10px; 
+
+        .back-btn a {
+            background: #6c757d;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 5px;
+            text-decoration: none;
         }
-        table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            margin-top: 15px; 
-            table-layout: fixed; /* prevents stretching */
+        .back-btn a:hover { background: #5a6268; }
+
+        form.filter-form { text-align: center; margin-bottom: 20px; }
+        form.filter-form label { margin: 0 10px; font-size: 13px; }
+        form.filter-form input { padding: 5px; font-size: 12px; }
+        form.filter-form button {
+            padding: 6px 12px;
+            background: #007bff;
+            border: none;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
         }
-        th, td { 
-            border: 1px solid #ccc; 
-            padding: 6px; 
-            text-align: center; 
-            font-size: 11px; 
-            word-wrap: break-word; 
-            overflow-wrap: break-word; 
-        }
-        th { 
-            background: #007bff; 
-            color: white; 
-            font-size: 12px; 
-        }
-        tr:nth-child(even) { 
-            background: #f1f8ff; 
-        }
-        tfoot td { 
-            font-weight: bold; 
-            background: #cce5ff; 
-        }
-        /* Right align numeric values */
+        form.filter-form button:hover { background: #0056b3; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; table-layout: fixed; }
+        th, td { border: 1px solid #ccc; padding: 6px; text-align: center; font-size: 11px; word-wrap: break-word; }
+        th { background: #007bff; color: white; font-size: 12px; }
+        tr:nth-child(even) { background: #f1f8ff; }
+        tfoot td { font-weight: bold; background: #cce5ff; }
+
         .num { text-align: right; }
 
-        /* Print/PDF styling */
-        @media print {
-            body { margin: 10px; }
-            h2 { margin-bottom: 5px; font-size: 14px; }
-            table { font-size: 10px; }
-            th, td { padding: 4px; }
+        .download-btn { text-align: center; margin-top: 15px; }
+        .download-btn a {
+            background: #28a745;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            text-decoration: none;
         }
+        .download-btn a:hover { background: #218838; }
     </style>
 </head>
 <body>
     <h2>📊 Brookelands Sales Report</h2>
+
+    <!-- Back button + Filter -->
+    <div class="top-actions">
+        <div class="back-btn">
+            <a href="{% url 'admin_dashboard' %}">⬅ Back to Dashboard</a>
+        </div>
+    </div>
+
+    <!-- Filter Form -->
+    <form method="get" action="" class="filter-form">
+        <label>From: <input type="date" name="start_date" value="{{ request.GET.start_date }}"></label>
+        <label>To: <input type="date" name="end_date" value="{{ request.GET.end_date }}"></label>
+        <button type="submit">🔍 Apply Filter</button>
+    </form>
+
+    <!-- Download Excel Button -->
+    <div class="download-btn">
+        <a href="{% url 'admin_sales_excel' %}?start_date={{ request.GET.start_date }}&end_date={{ request.GET.end_date }}">
+            📥 Download Excel
+        </a>
+    </div>
+
+    <!-- Sales Table -->
     <table>
         <thead>
             <tr>
@@ -78,10 +104,12 @@
                 <td class="num">{{ sale.quantity }}</td>
                 <td class="num">{{ sale.price|floatformat:0|intcomma }}</td>
                 <td>{{ sale.date|date:"d/m/Y" }}</td>
-                <td>{{ sale.payment_method }}</td>
+                <td>{{ sale.payment_method }} ({{ sale.payment_status }})</td>
             </tr>
             {% empty %}
-            <tr><td colspan="8">No sales records found.</td></tr>
+            <tr>
+                <td colspan="8">No sales records found.</td>
+            </tr>
             {% endfor %}
         </tbody>
         <tfoot>

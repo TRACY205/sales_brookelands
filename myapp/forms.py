@@ -1,16 +1,6 @@
-from django import forms 
-from .models import Sale
-class SaleForm(forms.ModelForm):
-    class Meta:
-        model = Sale
-        fields = ["category", "item", "quantity", "price", "payment_method", "date"]
-        widgets = {
-            "date": forms.DateInput(attrs={"type": "date"}),  # HTML date picker
-        }
-
-
 from django import forms
-from .models import Expense
+from .models import Sale, Expense
+
 
 class ExpenseForm(forms.ModelForm):
     class Meta:
@@ -26,12 +16,34 @@ class ExpenseForm(forms.ModelForm):
             "amount_paid",
             "bank_charges",
         ]
+        widgets = {
+            "date": forms.DateInput(attrs={"type": "date"}),  # HTML date picker
+        }
 
 
 class SaleForm(forms.ModelForm):
+    PAYMENT_STATUS_CHOICES = [
+        ("Delivery", "✅ Delivery"),
+        ("Not Paid", "❌ Not Paid"),
+    ]
+
+    payment_status = forms.ChoiceField(
+        choices=PAYMENT_STATUS_CHOICES,
+        widget=forms.RadioSelect,
+        required=True,
+    )
+
     class Meta:
         model = Sale
-        fields = ["category", "item", "quantity", "price", "payment_method", "payment_status", "date"]
+        fields = [
+            "category",
+            "item",
+            "quantity",
+            "price",
+            "payment_method",
+            "payment_status",
+            "date",
+        ]
         widgets = {
             "date": forms.DateInput(attrs={"type": "date"}),
         }

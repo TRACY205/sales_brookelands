@@ -205,22 +205,36 @@ h3::before { content: "✨ "; }
             <input type="text" id="price" name="price" placeholder="Automatically calculated">
 
             <label>Payment</label>
-            <div class="payment-options">
-                <label><input type="radio" name="payment_method" value="Cash" required> 💵 Cash</label>
-                <label><input type="radio" name="payment_method" value="MPesa" required> 📱 MPesa</label>
-                <label><input type="radio" name="payment_status" value="Paid"> ✅ Paid</label>
-                <label><input type="radio" name="payment_status" value="Not Paid"> ❌ Not Paid</label>
-            </div>
+          <div class="payment-options">
+    <!-- Payment Method -->
+    <label>
+        <input type="radio" name="payment_method" value="Cash" required> 💵 Cash
+    </label>
+    <label>
+        <input type="radio" name="payment_method" value="MPesa" required> 📱 MPesa
+    </label>
+
+    <!-- Payment Status (renamed Paid → Delivery) -->
+    <label>
+        <input type="radio" name="payment_status" value="Delivery" required> ✅ Delivery
+    </label>
+    <label>
+        <input type="radio" name="payment_status" value="Not Paid" required> ❌ Not Paid
+    </label>
+</div>
 
             <button type="submit">✅ Submit Order</button>
         </form>
     </div>
 
-    <!-- ===== Previous Orders ===== -->
-    <h3>📋 Your Previous Orders</h3>
-    <div class="table-wrapper">
+  <!-- ===== Previous Orders ===== -->
+<h3>📋 Your Previous Orders</h3>
+<div class="table-wrapper">
+    <form method="post" action="{% url 'delete_orders' %}" id="delete-form">
+        {% csrf_token %}
         <table class="orders-table">
             <tr>
+                <th>Select</th>
                 <th>ID</th>
                 <th>Category</th>
                 <th>Item</th>
@@ -232,6 +246,7 @@ h3::before { content: "✨ "; }
             </tr>
             {% for sale in sales %}
             <tr>
+                <td><input type="checkbox" name="selected_orders" value="{{ sale.id }}"></td>
                 <td>{{ sale.id }}</td>
                 <td>{{ sale.category }}</td>
                 <td>{{ sale.item }}</td>
@@ -248,11 +263,16 @@ h3::before { content: "✨ "; }
             </tr>
             {% empty %}
             <tr>
-                <td colspan="8" class="empty">No orders yet.</td>
+                <td colspan="9" class="empty">No orders yet.</td>
             </tr>
             {% endfor %}
         </table>
-    </div>
+        <button type="submit" 
+                onclick="return confirm('Are you sure you want to delete the selected orders?')" 
+                style="margin-top:15px; background:#dc3545; color:#fff; border:none; padding:10px 20px; border-radius:50px; cursor:pointer;">
+            🗑️ Delete Selected
+        </button>
+    </form>
 </div>
 
 <!-- ===== JS for Dynamic Pricing ===== -->

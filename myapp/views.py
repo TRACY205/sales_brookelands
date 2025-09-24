@@ -22,11 +22,11 @@ PRICE_LIST = {
         "1L + B": 30,
         "1L (R)": 10,
         "5L (R)": 70,
-        "5L + Bottle": 150,
+        "5L Bottle": 150,
         "10L (R)": 130,
-        "10L + Bottle": 250,
+        "10L Bottle": 250,
         "20L (R)": 250,
-        "20L + Bottle": 500,
+        "20L  Bottle": 500,
         "20L (Hard) + water": 1500,
     },
     "Gas": {
@@ -103,6 +103,13 @@ def logout_view(request):
 # --------------------------
 # User dashboard
 # --------------------------
+from decimal import Decimal
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
+import json
+from .models import Sale
+
 @login_required
 def user_dashboard(request):
     if request.method == "POST":
@@ -111,8 +118,9 @@ def user_dashboard(request):
         quantity = request.POST.get("quantity")
         price = request.POST.get("price")
         payment_method = request.POST.get("payment_method")
+        payment_status = request.POST.get("payment_status")  # ✅ capture status
 
-        if not category or not item or not quantity or not price or not payment_method:
+        if not category or not item or not quantity or not price or not payment_method or not payment_status:
             messages.error(request, "⚠️ Please fill all required fields.")
             return redirect("user_dashboard")
 
@@ -122,17 +130,19 @@ def user_dashboard(request):
             item=item,
             quantity=int(quantity),
             price=Decimal(price),
-            payment_method=payment_method
+            payment_method=payment_method,
+            payment_status=payment_status,  # ✅ save status
         )
         messages.success(request, "✅ Order submitted successfully!")
         return redirect("user_dashboard")
 
     sales = Sale.objects.filter(user=request.user).order_by("-date")
-    
+
     return render(request, "user_dashboard.html", {
         "sales": sales,
-        "PRICE_LIST_JSON": json.dumps(PRICE_LIST)
+        "PRICE_LIST_JSON": json.dumps(PRICE_LIST),
     })
+
 
 # --------------------------
 # Admin dashboard
@@ -343,8 +353,52 @@ def admin_expenses_excel(request):
     return response
 
 # ------------------- Excel Sales with Totals by Payment Method -------------------
+from django.shortcuts import render
+from django.http import HttpResponse
+from django.db.models import Sum
+from openpyxl import Workbook
+from openpyxl.styles import Font, numbers
+from django.utils.dateparse import parse_date
+from .models import Sale
+
+
+# =========================
+# 📊 Sales Report (HTML page)
+# =========================
+def sales_report(request):
+    start_date = request.GET.get("start_date")
+    end_date = request.GET.get("end_date")
+
+    sales = Sale.objects.all().order_by("date")
+
+    # Filter by date range
+    if start_date:
+        sales = sales.filter(date__gte=parse_date(start_date))
+    if end_date:
+        sales = sales.filter(date__lte=parse_date(end_date))
+
+    total_amount = sales.aggregate(Sum("price"))["price__sum"] or 0
+
+    return render(request, "admin_sales_report.html", {
+        "sales": sales,
+        "total_amount": total_amount,
+    })
+
+
+# =========================
+# 📥 Export Sales to Excel
+# =========================
 def admin_sales_excel(request):
-    # Create workbook and sheet
+    start_date = request.GET.get("start_date")
+    end_date = request.GET.get("end_date")
+
+    sales = Sale.objects.all().order_by("date")
+
+    if start_date:
+        sales = sales.filter(date__gte=parse_date(start_date))
+    if end_date:
+        sales = sales.filter(date__lte=parse_date(end_date))
+
     wb = Workbook()
     ws = wb.active
     ws.title = "Sales Report"
@@ -352,44 +406,46 @@ def admin_sales_excel(request):
     # Headers
     headers = ["Date", "Item", "Quantity (L)", "Price", "Payment Method"]
     ws.append(headers)
+    for cell in ws[1]:
+        cell.font = Font(bold=True)
 
-    # Sales data
-    sales = Sale.objects.all().order_by("date")
-
-    # Track totals
     total_price = 0
     total_cash = 0
     total_mpesa = 0
-    total_r_liters = 0  # 👈 only sum quantities with (R)
+    total_r_liters = 0
 
-    for s in sales:
-        ws.append([
-            s.date.strftime("%d/%m/%y"),
-            s.item,
-            s.quantity,
-            float(s.price),
-            f"{s.payment_method} ({s.payment_status})",  # 👈 CHANGE HERE
-        ])
-        total_price += float(s.price)
+    if not sales.exists():
+        ws.append(["No sales data available"])
+    else:
+        for s in sales:
+            ws.append([
+                s.date.strftime("%d/%m/%y"),
+                s.item,
+                s.quantity,
+                float(s.price),
+                f"{s.payment_method} ({s.payment_status})",
+            ])
+            ws.cell(row=ws.max_row, column=4).number_format = numbers.FORMAT_NUMBER_COMMA_SEPARATED1
 
-        # 👇 only add to liters if item contains "(R)"
-        if "(R)" in str(s.item):
-            total_r_liters += s.quantity
+            total_price += float(s.price)
 
-        if s.payment_method.lower() == "cash":
-            total_cash += float(s.price)
-        elif s.payment_method.lower() == "mpesa":
-            total_mpesa += float(s.price)
+            if "(R)" in str(s.item):
+                total_r_liters += s.quantity
 
-    # Add empty row for spacing
-    ws.append([])
+            if s.payment_method.lower() == "cash":
+                total_cash += float(s.price)
+            elif s.payment_method.lower() == "mpesa":
+                total_mpesa += float(s.price)
 
-    # Totals row
-    ws.append(["TOTAL (R only)", "", total_r_liters, total_price, ""])
-    ws.append(["", "Cash Total", "", total_cash, ""])
-    ws.append(["", "MPesa Total", "", total_mpesa, ""])
+        ws.append([])
+        ws.append(["TOTAL (R only)", "", total_r_liters, total_price, ""])
+        ws.append(["", "Cash Total", "", total_cash, ""])
+        ws.append(["", "MPesa Total", "", total_mpesa, ""])
 
-    # Save response
+        for row in ws.iter_rows(min_row=ws.max_row-2, max_row=ws.max_row, min_col=1, max_col=5):
+            for cell in row:
+                cell.font = Font(bold=True)
+
     response = HttpResponse(
         content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
@@ -462,3 +518,48 @@ def edit_sale(request, sale_id):
     else:
         form = SaleForm(instance=sale)
     return render(request, "edit_sale.html", {"form": form, "sale": sale})
+
+
+
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.shortcuts import redirect, get_object_or_404
+from .models import Sale, Expense
+
+
+@login_required
+def delete_orders(request):
+    if request.method == "POST":
+        order_ids = request.POST.getlist("selected_orders")
+        if order_ids:
+            Sale.objects.filter(id__in=order_ids).delete()
+            messages.success(request, f"{len(order_ids)} order(s) deleted successfully.")
+        else:
+            messages.error(request, "No orders were selected for deletion.")
+    return redirect("dashboard")   # user dashboard
+
+
+@login_required
+def delete_sales(request):
+    if request.method == "POST":
+        sale_ids = request.POST.getlist("selected_sales")
+        if sale_ids:
+            Sale.objects.filter(id__in=sale_ids).delete()
+            messages.success(request, f"{len(sale_ids)} sale(s) deleted successfully.")
+        else:
+            messages.error(request, "No sales were selected for deletion.")
+    return redirect("admin_dashboard")   # admin dashboard
+
+
+@login_required
+def delete_expenses(request):
+    if request.method == "POST":
+        expense_ids = request.POST.getlist("selected_expenses")
+        if expense_ids:
+            Expense.objects.filter(id__in=expense_ids).delete()
+            messages.success(request, f"{len(expense_ids)} expense(s) deleted successfully.")
+        else:
+            messages.error(request, "No expenses were selected for deletion.")
+    return redirect("admin_dashboard")   # ✅ go back to admin dashboard
+
+

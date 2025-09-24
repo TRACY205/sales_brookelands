@@ -28,6 +28,13 @@ urlpatterns = [
        path("expenses/", views.expenses_list, name="expenses_list"),
     path("expenses/<int:pk>/edit/", views.edit_expense, name="edit_expense"),
       path("edit-sale/<int:sale_id>/", views.edit_sale, name="edit_sale"),
+       path("delete-orders/", views.delete_orders, name="delete_orders"), 
+        path("delete-sales/", views.delete_sales, name="delete_sales"),
+        path("delete-expenses/", views.delete_expenses, name="delete_expenses"),
+        path("sales-report/", views.sales_report, name="sales_report"),
+path("sales-excel/", views.admin_sales_excel, name="admin_sales_excel"),
+
+
 
 
 ]
