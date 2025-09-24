@@ -23,6 +23,7 @@ class ExpenseForm(forms.ModelForm):
 
 class SaleForm(forms.ModelForm):
     PAYMENT_STATUS_CHOICES = [
+        ("Paid", "💰 Paid"),
         ("Delivery", "✅ Delivery"),
         ("Not Paid", "❌ Not Paid"),
     ]
