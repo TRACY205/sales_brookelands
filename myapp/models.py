@@ -39,8 +39,10 @@ class Sale(models.Model):
     quantity = models.PositiveIntegerField()
     price = models.DecimalField(max_digits=12, decimal_places=2)
     payment_method = models.CharField(max_length=50, choices=PAYMENT_METHOD)
-    date = models.DateField(default=timezone.now)
+    date = models.DateTimeField(default=timezone.now) 
     payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS, default="Not Paid")
+    delivery_place = models.CharField(max_length=255, blank=True, null=True)
+
 
     def __str__(self):
         return f"{self.user.username} - {self.item} - {self.price} ({self.payment_status})"

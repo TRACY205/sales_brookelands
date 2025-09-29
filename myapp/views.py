@@ -70,27 +70,27 @@ def register_view(request):
 
 # --------------------------
 # User login
-# --------------------------
-from django.views.decorators.csrf import ensure_csrf_cookie
+from django.contrib.auth import authenticate, login
+from django.shortcuts import render, redirect
+from django.contrib import messages
 
-@ensure_csrf_cookie
 def login_view(request):
     if request.method == "POST":
         username = request.POST.get("username")
         password = request.POST.get("password")
-        is_admin_portal = request.POST.get("is_admin_portal")  # Optional hidden input from admin button
+
         user = authenticate(request, username=username, password=password)
-        if user:
-            if is_admin_portal and not user.is_superuser:
-                messages.error(request, "🚫 Unauthorized access to Admin portal.")
-                return redirect("landing")
-            
+
+        if user is not None:
             login(request, user)
-            if user.is_superuser:
+            if user.is_staff:  # Admin goes to admin dashboard
                 return redirect("admin_dashboard")
-            return redirect("user_dashboard")
+            else:  # Normal user goes to user dashboard
+                return redirect("user_dashboard")
         else:
             messages.error(request, "Invalid username or password")
+            return redirect("login")
+
     return render(request, "login.html")
 
 # --------------------------
@@ -109,44 +109,46 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 import json
 from .models import Sale
-
 @login_required
 def user_dashboard(request):
     if request.method == "POST":
         category = request.POST.get("category")
         item = request.POST.get("item") or request.POST.get("local_item")
         quantity = request.POST.get("quantity")
-        price = request.POST.get("price")
         payment_method = request.POST.get("payment_method")
-        payment_status = request.POST.get("payment_status")  # ✅ capture status
+        payment_status = request.POST.get("payment_status")
+        delivery_place = request.POST.get("delivery_place")  # ✅ capture delivery
 
-        if not category or not item or not quantity or not price or not payment_method or not payment_status:
+        if not category or not item or not quantity or not payment_method or not payment_status:
             messages.error(request, "⚠️ Please fill all required fields.")
             return redirect("user_dashboard")
+
+        # Automatically get price from PRICE_LIST
+        item_price = Decimal(PRICE_LIST.get(item, 0))
+        total_price = item_price * Decimal(quantity)
 
         Sale.objects.create(
             user=request.user,
             category=category,
             item=item,
             quantity=int(quantity),
-            price=Decimal(price),
+            price=total_price,
             payment_method=payment_method,
-            payment_status=payment_status,  # ✅ save status
+            payment_status=payment_status,
+            delivery_place=delivery_place if payment_status == "Delivery" else "",  # ✅ save only if Delivery
         )
-        messages.success(request, "✅ Order submitted successfully!")
+        messages.success(request, f"✅ Order submitted successfully! {item} - {quantity} @ {item_price} = {total_price}")
         return redirect("user_dashboard")
 
-    sales = Sale.objects.filter(user=request.user).order_by("-date")
+    sales = Sale.objects.filter(user=request.user).order_by("-id")
 
     return render(request, "user_dashboard.html", {
         "sales": sales,
         "PRICE_LIST_JSON": json.dumps(PRICE_LIST),
     })
 
-
 # --------------------------
 # Admin dashboard
-# --------------------------
 @login_required
 def admin_dashboard(request):
     # Prevent unauthorized access
@@ -154,12 +156,12 @@ def admin_dashboard(request):
         messages.error(request, "🚫 Unauthorized access.")
         return redirect("user_dashboard")
 
-    # Admin expenses
-    expenses = Expense.objects.all().order_by("-date")
+    # Admin expenses (latest first by ID)
+    expenses = Expense.objects.all().order_by("-id")
     total_expenses = expenses.aggregate(total=Sum("amount_paid"))["total"] or 0
 
-    # User sales/orders
-    sales = Sale.objects.all().order_by("-date")
+    # User sales/orders (latest first by ID)
+    sales = Sale.objects.all().order_by("-id")
     total_sales = sales.aggregate(total=Sum("price"))["total"] or 0
 
     context = {
@@ -169,6 +171,7 @@ def admin_dashboard(request):
         "total_sales": total_sales,
     }
     return render(request, "admin_dashboard.html", context)
+
 
 
 
@@ -383,17 +386,23 @@ def sales_report(request):
         "sales": sales,
         "total_amount": total_amount,
     })
-
-
 # =========================
-# 📥 Export Sales to Excel
+# 📥 Export Sales to Excel (Safe Version)
 # =========================
+from django.http import HttpResponse
+from openpyxl import Workbook
+from openpyxl.styles import Font, numbers
+from django.utils.dateparse import parse_date
+from datetime import datetime
+from .models import Sale
+
 def admin_sales_excel(request):
     start_date = request.GET.get("start_date")
     end_date = request.GET.get("end_date")
 
     sales = Sale.objects.all().order_by("date")
 
+    # ✅ Filter by dates
     if start_date:
         sales = sales.filter(date__gte=parse_date(start_date))
     if end_date:
@@ -404,22 +413,45 @@ def admin_sales_excel(request):
     ws.title = "Sales Report"
 
     # Headers
-    headers = ["Date", "Item", "Quantity (L)", "Price", "Payment Method"]
+    headers = ["Date", "Item", "Quantity", "Price", "Payment Method"]
     ws.append(headers)
     for cell in ws[1]:
         cell.font = Font(bold=True)
 
+    # Totals
     total_price = 0
     total_cash = 0
     total_mpesa = 0
-    total_r_liters = 0
+
+    total_delivery = 0
+    delivery_qty = 0
+
+    total_r_amount = 0
+    total_r_liters = 0  # already there
+
+    total_gas_amount = 0
+    gas_qty = 0
+
+    total_bottle_amount = 0
+    bottle_qty = 0
 
     if not sales.exists():
         ws.append(["No sales data available"])
     else:
         for s in sales:
+            # ✅ Safe date handling
+            sale_date = ""
+            if s.date:
+                if isinstance(s.date, str):
+                    try:
+                        sale_date = datetime.strptime(s.date, "%Y-%m-%d").strftime("%d/%m/%y")
+                    except ValueError:
+                        sale_date = s.date
+                else:
+                    sale_date = s.date.strftime("%d/%m/%y")
+
             ws.append([
-                s.date.strftime("%d/%m/%y"),
+                sale_date,
                 s.item,
                 s.quantity,
                 float(s.price),
@@ -427,31 +459,60 @@ def admin_sales_excel(request):
             ])
             ws.cell(row=ws.max_row, column=4).number_format = numbers.FORMAT_NUMBER_COMMA_SEPARATED1
 
-            total_price += float(s.price)
+            # Totals tracking
+            price_val = float(s.price or 0)
+            qty_val = int(s.quantity or 0)
+            total_price += price_val
 
+            # Liter tracking for (R)
             if "(R)" in str(s.item):
-                total_r_liters += s.quantity
+                total_r_liters += qty_val
+                total_r_amount += price_val
 
-            if s.payment_method.lower() == "cash":
-                total_cash += float(s.price)
-            elif s.payment_method.lower() == "mpesa":
-                total_mpesa += float(s.price)
+            # Payment method totals
+            if s.payment_method and s.payment_method.lower() == "cash":
+                total_cash += price_val
+            elif s.payment_method and s.payment_method.lower() == "mpesa":
+                total_mpesa += price_val
 
+            # Delivery total
+            if s.payment_status and s.payment_status.lower() == "delivery":
+                total_delivery += price_val
+                delivery_qty += qty_val
+
+            # Gas total
+            if "gas" in str(s.item).lower() or "wajiko" in str(s.item).lower():
+                total_gas_amount += price_val
+                gas_qty += qty_val
+
+            # Bottle total
+            if "bottle" in str(s.item).lower():
+                total_bottle_amount += price_val
+                bottle_qty += qty_val
+
+        # Totals section
         ws.append([])
-        ws.append(["TOTAL (R only)", "", total_r_liters, total_price, ""])
+        ws.append(["TOTAL (R only)", "", total_r_liters, total_r_amount, ""])
+        ws.append(["TOTAL Delivery", "", delivery_qty, total_delivery, ""])
+        ws.append(["TOTAL Gas", "", gas_qty, total_gas_amount, ""])
+        ws.append(["TOTAL Bottle", "", bottle_qty, total_bottle_amount, ""])
         ws.append(["", "Cash Total", "", total_cash, ""])
         ws.append(["", "MPesa Total", "", total_mpesa, ""])
+        ws.append(["", "Overall Total", "", total_price, ""])
 
-        for row in ws.iter_rows(min_row=ws.max_row-2, max_row=ws.max_row, min_col=1, max_col=5):
+        # Bold totals
+        for row in ws.iter_rows(min_row=ws.max_row-6, max_row=ws.max_row, min_col=1, max_col=5):
             for cell in row:
                 cell.font = Font(bold=True)
 
+    # Response
     response = HttpResponse(
         content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
     response["Content-Disposition"] = 'attachment; filename="sales_report.xlsx"'
     wb.save(response)
     return response
+# myapp/views.py
 
 
 
@@ -498,7 +559,7 @@ def edit_expense(request, pk):
 
     else:
         form = ExpenseForm(instance=expense)
-    return render(request, "edit_expense.html", {"form": form, "expense": expense})
+    return render(request, "edit_expense.html", {"form": form, "expense": expense})  
 
 
 
@@ -560,6 +621,4 @@ def delete_expenses(request):
             messages.success(request, f"{len(expense_ids)} expense(s) deleted successfully.")
         else:
             messages.error(request, "No expenses were selected for deletion.")
-    return redirect("admin_dashboard")   # ✅ go back to admin dashboard
-
-
+    return redirect("admin_dashboard")   # ✅ go back to admin dashboard    here?

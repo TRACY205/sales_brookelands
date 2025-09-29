@@ -1,7 +1,6 @@
 from django import forms
 from .models import Sale, Expense
 
-
 class ExpenseForm(forms.ModelForm):
     class Meta:
         model = Expense
@@ -17,9 +16,8 @@ class ExpenseForm(forms.ModelForm):
             "bank_charges",
         ]
         widgets = {
-            "date": forms.DateInput(attrs={"type": "date"}),  # HTML date picker
+            "date": forms.DateInput(attrs={"type": "date"}),
         }
-
 
 class SaleForm(forms.ModelForm):
     PAYMENT_STATUS_CHOICES = [
@@ -43,6 +41,7 @@ class SaleForm(forms.ModelForm):
             "price",
             "payment_method",
             "payment_status",
+            "delivery_place",  # include if model has it
             "date",
         ]
         widgets = {

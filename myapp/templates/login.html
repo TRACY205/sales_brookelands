@@ -3,36 +3,9 @@
 
 {% block content %}
 <style>
-/* Page background */
-body {
-    background: linear-gradient(135deg, #ffecd2, #c4f3ca);
-    font-family: 'Arial', sans-serif;
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0;
-}
-
-/* Page wrapper */
-.page-wrapper {
-    text-align: center;
-    width: 100%;
-}
-
-/* Title at the top */
-.page-wrapper h1 {
-    font-family: 'Comic Sans MS', cursive, sans-serif;
-    font-size: 2em;
-    color: #1e1d1d;
-    text-shadow: 2px 2px 5px rgba(0,0,0,0.3);
-    margin-bottom: 30px;
-}
-
-/* Container */
 .login-container {
     max-width: 400px;
-    margin: auto;
+    margin: 80px auto;
     padding: 35px 30px;
     background: #fff;
     border-radius: 20px;
@@ -40,121 +13,68 @@ body {
     text-align: center;
 }
 
-/* Heading */
-.login-container h2 {
-    margin-bottom: 25px;
-    color: #333;
-    font-family: 'Verdana', sans-serif;
-}
-
 /* Input fields */
-.login-container input[type="text"],
-.login-container input[type="password"] {
+.login-container input {
     width: 100%;
-    padding: 12px 15px;
-    margin-bottom: 15px;
-    border: 1px solid #ccc;
+    padding: 12px;
+    margin: 10px 0;
     border-radius: 50px;
-    font-size: 16px;
-    box-sizing: border-box;
-    transition: 0.3s;
-}
-.login-container input[type="text"]:focus,
-.login-container input[type="password"]:focus {
-    border-color: #4CAF50;
-    box-shadow: 0 0 8px rgba(76, 175, 80, 0.3);
-    outline: none;
+    border: 1px solid #ccc;
 }
 
 /* Buttons */
 .login-container button {
     width: 100%;
     padding: 12px;
+    border-radius: 50px;
+    border: none;
+    cursor: pointer;
     background-color: #4CAF50;
     color: white;
-    border: none;
-    border-radius: 50px;
     font-size: 16px;
-    cursor: pointer;
-    transition: background 0.3s, transform 0.2s;
     margin-top: 10px;
 }
-.login-container button:hover {
-    background-color: #45a049;
-    transform: scale(1.05);
-}
+.login-container button:hover { background-color: #45a049; }
 
-/* Secondary button for landing page */
-.login-container .back-button {
+/* Back button */
+.back-button {
     background-color: #b8eae0;
+    color: #000;
 }
-.login-container .back-button:hover {
-    background-color: #7add94;
-    transform: scale(1.05);
-}
+.back-button:hover { background-color: #7add94; }
 
-/* Messages */
+/* Flash messages */
 .message {
     margin-bottom: 15px;
-    font-size: 0.95em;
-    text-align: left;
     padding: 10px;
     border-radius: 10px;
+    text-align: center;
 }
-
-.message.error {
-    background-color: #a41414;
-    color: #a94442;
-    border: 1px solid #a94442;
-}
-
-.message.success {
-    background-color: #ddffdd;
-    color: #3c763d;
-    border: 1px solid #3c763d;
-}
-
-/* Register link */
-.register-link {
-    margin-top: 15px;
-    font-size: 0.95em;
-}
-.register-link a {
-    color: #007BFF;
-    text-decoration: none;
-    font-weight: bold;
-}
-.register-link a:hover {
-    text-decoration: underline;
-}
+.message.error { background-color: #f8d7da; color: #721c24; }
+.message.success { background-color: #d4edda; color: #155724; }
 </style>
 
-<div class="page-wrapper">
-    <h1>🌊 Brookelands Sales System 🌟</h1>
+<div class="login-container">
+    <h2>🌊 Brookelands Sales System 🌟</h2>
 
-    <div class="login-container">
-        <h2>Login</h2>
-        {% if messages %}
-            {% for message in messages %}
-                <p class="message {{ message.tags }}">{{ message }}</p>
-            {% endfor %}
-        {% endif %}
-        <form method="post" action="{% url 'login' %}">
-            {% csrf_token %}
-            <input type="text" name="username" placeholder="Username" required>
-            <input type="password" name="password" placeholder="Password" required>
-            <button type="submit">Login</button>
-        </form>
+    <!-- Flash messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <p class="message {{ message.tags }}">{{ message }}</p>
+        {% endfor %}
+    {% endif %}
 
-        <!-- Register link -->
-        <p class="register-link">
-            New user? <a href="{% url 'register' %}">Register here</a>
-        </p>
+    <!-- Single Login Form -->
+    <form method="post" action="{% url 'login' %}">
+        {% csrf_token %}
+        <input type="text" name="username" placeholder="Username" required>
+        <input type="password" name="password" placeholder="Password" required>
+        <button type="submit">Login</button>
+    </form>
 
-        <!-- Back to Landing Page button -->
-        <a href="{% url 'landing' %}">
-            <button class="back-button">🏠 Back to Landing Page</button>
-        </a>
-    </div>
+    <!-- Back to Landing Page -->
+    <a href="{% url 'landing' %}">
+        <button type="button" class="back-button">🏠 Back to Landing Page</button>
+    </a>
 </div>
 {% endblock %}

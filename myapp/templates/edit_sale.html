@@ -1,13 +1,110 @@
 {% extends "base.html" %}
-{% block title %}Edit Sale{% endblock %}
+{% block title %}Edit Sale #{{ sale.id }}{% endblock %}
 
 {% block content %}
+<style>
+/* ===== Form Container ===== */
+.form-container {
+    max-width: 600px;
+    margin: 30px auto;
+    padding: 25px;
+    border-radius: 12px;
+    background-color: #f8f9fa;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+}
+
+.form-container h2 {
+    margin-bottom: 25px;
+    color: #28a745;
+    text-align: center;
+}
+
+/* ===== Labels & Inputs ===== */
+.form-container label {
+    display: block;
+    margin-top: 15px;
+    font-weight: bold;
+    color: #0a0b0b;
+}
+
+.form-container input,
+.form-container select,
+.form-container textarea {
+    width: 100%;
+    padding: 10px 12px;
+    margin-top: 6px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 1em;
+    box-sizing: border-box;
+    transition: border 0.3s;
+}
+
+.form-container input:focus,
+.form-container select:focus,
+.form-container textarea:focus {
+    border-color: #28a745;
+    outline: none;
+}
+
+/* ===== Save Button ===== */
+.form-container .btn {
+    margin-top: 20px;
+    width: 100%;
+    background-color: #2563eb;
+    color: #fff;
+    border: none;
+    padding: 12px 0;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1em;
+    transition: background 0.3s, transform 0.2s;
+}
+
+.form-container .btn:hover {
+    background-color: #1d4ed8;
+    transform: scale(1.03);
+}
+
+/* ===== Responsive ===== */
+@media(max-width: 480px) {
+    .form-container {
+        padding: 15px;
+    }
+}
+</style>
+
 <div class="form-container">
     <h2>Edit Sale #{{ sale.id }}</h2>
     <form method="post">
         {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn">Save Changes</button>
+
+        <label for="id_category">Category:</label>
+        {{ form.category }}
+
+        <label for="id_item">Item:</label>
+        {{ form.item }}
+
+        <label for="id_quantity">Quantity:</label>
+        {{ form.quantity }}
+
+        <label for="id_price">Price (KSh):</label>
+        {{ form.price }}
+
+        <label for="id_payment_method">Payment Method:</label>
+        {{ form.payment_method }}
+
+        <label for="id_payment_status">Payment Status:</label>
+        {{ form.payment_status }}
+
+        <label for="id_delivery_place">Delivery Place:</label>
+        {{ form.delivery_place }}
+
+        <label for="id_date">Date:</label>
+        {{ form.date }}
+
+        <button type="submit" class="btn">💾 Save Changes</button>
     </form>
 </div>
 {% endblock %}

@@ -107,40 +107,25 @@ h3::before { content: "✨ "; }
 .order-form button:hover { background: #218838; transform: scale(1.05); }
 
 /* ===== Orders Table ===== */
-.table-wrapper {
-    overflow-x: auto; /* 👈 enables scrolling on small screens */
-}
+.table-wrapper { overflow-x: auto; }
 .orders-table {
     width: 100%;
     border-collapse: collapse;
     border-radius: 20px;
     overflow: hidden;
     box-shadow: 0 8px 18px rgba(0,0,0,0.05);
-    min-width: 600px; /* 👈 keeps table usable */
+    min-width: 800px;
 }
 .orders-table th, .orders-table td {
-    padding: 14px;
+    padding: 12px 15px;
     border: 1px solid #eee;
-    text-align: left;
-    white-space: nowrap; /* 👈 prevents wrapping */
+    text-align: center;
+    white-space: nowrap;
 }
 .orders-table th { background: #28a745; color: #fff; font-size: 1em; }
 .orders-table tr:nth-child(even) { background: #e9f7ef; }
 .orders-table tr:hover { background: #d4edda; transition: 0.3s; }
 .orders-table .empty { text-align: center; padding: 15px; color: #777; font-style: italic; }
-
-/* ===== Payment Options ===== */
-.payment-options {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 20px;
-}
-.payment-options label {
-    font-weight: 600;
-    cursor: pointer;
-}
-.payment-options input { margin-right: 6px; }
 
 /* ===== Responsive ===== */
 @media(max-width: 768px) {
@@ -148,13 +133,6 @@ h3::before { content: "✨ "; }
     .order-form { padding: 20px; }
     .order-form button { font-size: 1em; }
     .orders-table th, .orders-table td { font-size: 0.85em; padding: 8px; }
-}
-@media(max-width: 480px) {
-    h2 { font-size: 1.5em; }
-    h3 { font-size: 1em; }
-    .order-form label { font-size: 0.9em; }
-    .order-form input, .order-form select { font-size: 0.9em; padding: 10px; }
-    .order-form button { font-size: 1em; padding: 12px; }
 }
 </style>
 
@@ -176,116 +154,114 @@ h3::before { content: "✨ "; }
     </div>
 
     <!-- ===== Order Form ===== -->
-<div class="order-form">
-    <h3>📦 Submit New Order</h3>
-    <form method="post" action="{% url 'user_dashboard' %}">
-        {% csrf_token %}
+    <div class="order-form">
+        <h3>📦 Submit New Order</h3>
+        <form method="post" action="{% url 'user_dashboard' %}">
+            {% csrf_token %}
 
-        <label>Category</label>
-        <select id="category" name="category" required>
-            <option value="">--Select Category--</option>
-            <option value="Water">Water 💧</option>
-            <option value="Gas">Gas 🔥</option>
-        </select>
+            <label>Category</label>
+            <select id="category" name="category" required>
+                <option value="">--Select Category--</option>
+                <option value="Water">Water 💧</option>
+                <option value="Gas">Gas 🔥</option>
+            </select>
 
-        <label>Item</label>
-        <select id="item" name="item">
-            <option value="">--Select Item--</option>
-        </select>
+            <label>Item</label>
+            <select id="item" name="item">
+                <option value="">--Select Item--</option>
+            </select>
 
-        <p style="text-align:center; font-style: italic; margin: -10px 0 10px 0;">
-            OR enter a local item:
-        </p>
-        <input type="text" id="local_item" name="local_item" placeholder="Type local item name here">
+            <p style="text-align:center; font-style: italic; margin: -10px 0 10px 0;">
+                OR enter a local item:
+            </p>
+            <input type="text" id="local_item" name="local_item" placeholder="Type local item name here">
 
-        <label>Quantity</label>
-        <input type="number" id="quantity" name="quantity" min="1" value="1" required>
+            <label>Quantity</label>
+            <input type="number" id="quantity" name="quantity" min="1" value="1" required>
 
-        <label>Total Price</label>
-        <input type="text" id="price" name="price" placeholder="Automatically calculated" readonly>
+            <label>Total Price</label>
+            <input type="number" id="price" name="price" placeholder="Enter price manually" required>
 
-        <!-- Payment Method -->
-        <label>Payment Method</label>
-        <div class="payment-methods">
-            <label>
-                <input type="radio" name="payment_method" value="Cash" required> 💵 Cash
-            </label>
-            <label>
-                <input type="radio" name="payment_method" value="MPesa" required> 📱 MPesa
-            </label>
-        </div>
+            <!-- Payment Method -->
+            <label>Payment Method</label>
+            <div>
+                <label><input type="radio" name="payment_method" value="Cash" required> 💵 Cash</label>
+                <label><input type="radio" name="payment_method" value="MPesa" required> 📱 MPesa</label>
+            </div>
 
-        <!-- Payment Status -->
-        <label>Payment Status</label>
-        <div class="payment-status">
-            <label>
-                <input type="radio" name="payment_status" value="Paid" required> 💰 Paid
-            </label>
-            <label>
-                <input type="radio" name="payment_status" value="Delivery" required> ✅ Delivery
-            </label>
-            <label>
-                <input type="radio" name="payment_status" value="Not Paid" required> ❌ Not Paid
-            </label>
-        </div>
+            <!-- Payment Status -->
+            <label>Payment Status</label>
+            <div>
+                <label><input type="radio" name="payment_status" value="Paid" required> 💰 Paid</label>
+                <label><input type="radio" name="payment_status" value="Delivery" required onclick="toggleDelivery()"> ✅ Delivery</label>
+                <label><input type="radio" name="payment_status" value="Not Paid" required onclick="toggleDelivery()"> ❌ Not Paid</label>
+            </div>
 
-        <button type="submit">✅ Submit Order</button>
-    </form>
+            <!-- Delivery Place -->
+            <div id="delivery_place_field" style="display:none;">
+                <label>Delivery Place</label>
+                <input type="text" id="delivery_place" name="delivery_place" placeholder="Enter delivery place">
+            </div>
+
+            <button type="submit">✅ Submit Order</button>
+        </form>
+    </div>
+
+    <!-- ===== Previous Orders ===== -->
+    <h3>📋 Your Previous Orders</h3>
+    <div class="table-wrapper">
+        <form method="post" action="{% url 'delete_orders' %}" id="delete-form">
+            {% csrf_token %}
+            <table class="orders-table">
+                <tr>
+                    <th>Select</th>
+                    <th>ID</th>
+                    <th>Category</th>
+                    <th>Item</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Date</th>
+                    <th>Payment</th>
+                    <th>Place</th>
+                    <th>Action</th>
+                </tr>
+                {% for sale in sales %}
+                <tr>
+                    <td><input type="checkbox" name="selected_orders" value="{{ sale.id }}"></td>
+                    <td>{{ sale.id }}</td>
+                    <td>{{ sale.category }}</td>
+                    <td>{{ sale.item }}</td>
+                    <td>{{ sale.quantity }}</td>
+                    <td>KSh {{ sale.price|floatformat:0|intcomma }}</td>
+                    <td>{{ sale.date|date:"d/m/y" }}</td>
+                    <td>{{ sale.payment_method }} ({{ sale.payment_status }})</td>
+                    <td>{% if sale.delivery_place %}{{ sale.delivery_place }}{% else %}-{% endif %}</td>
+                    <td>
+                        <a href="{% url 'edit_order' sale.id %}" 
+                           class="bg-blue-500 hover:bg-blue-700 text-white px-3 py-1 rounded">
+                           ✏️ Edit
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="10" class="empty">No orders yet.</td>
+                </tr>
+                {% endfor %}
+            </table>
+            <button type="submit" 
+                    onclick="return confirm('Are you sure you want to delete the selected orders?')" 
+                    style="margin-top:15px; background:#dc3545; color:#fff; border:none; padding:10px 20px; border-radius:50px; cursor:pointer;">
+                🗑️ Delete Selected
+            </button>
+        </form>
+    </div>
 </div>
 
-  <!-- ===== Previous Orders ===== -->
-<h3>📋 Your Previous Orders</h3>
-<div class="table-wrapper">
-    <form method="post" action="{% url 'delete_orders' %}" id="delete-form">
-        {% csrf_token %}
-        <table class="orders-table">
-            <tr>
-                <th>Select</th>
-                <th>ID</th>
-                <th>Category</th>
-                <th>Item</th>
-                <th>Quantity</th>
-                <th>Price</th>
-                <th>Date</th>
-                <th>Payment</th>
-                <th>Action</th>
-            </tr>
-            {% for sale in sales %}
-            <tr>
-                <td><input type="checkbox" name="selected_orders" value="{{ sale.id }}"></td>
-                <td>{{ sale.id }}</td>
-                <td>{{ sale.category }}</td>
-                <td>{{ sale.item }}</td>
-                <td>{{ sale.quantity }}</td>
-                <td>KSh {{ sale.price|floatformat:0|intcomma }}</td>
-                <td>{{ sale.date|date:"d/m/y H:i" }}</td>
-                <td>{{ sale.payment_method }} ({{ sale.payment_status }})</td>
-                <td>
-                    <a href="{% url 'edit_order' sale.id %}" 
-                       class="bg-blue-500 hover:bg-blue-700 text-white px-3 py-1 rounded">
-                       ✏️ Edit
-                    </a>
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="9" class="empty">No orders yet.</td>
-            </tr>
-            {% endfor %}
-        </table>
-        <button type="submit" 
-                onclick="return confirm('Are you sure you want to delete the selected orders?')" 
-                style="margin-top:15px; background:#dc3545; color:#fff; border:none; padding:10px 20px; border-radius:50px; cursor:pointer;">
-            🗑️ Delete Selected
-        </button>
-    </form>
-</div>
-
-<!-- ===== JS for Dynamic Pricing ===== -->
+<!-- ===== JS ===== -->
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     const PRICE_LIST = JSON.parse('{{ PRICE_LIST_JSON|escapejs }}');
-
     const categorySelect = document.getElementById("category");
     const itemSelect = document.getElementById("item");
     const qtyInput = document.getElementById("quantity");
@@ -339,6 +315,11 @@ document.addEventListener("DOMContentLoaded", function() {
         manualPriceEdited = true;
     });
 });
+
+function toggleDelivery() {
+    const deliveryField = document.getElementById("delivery_place_field");
+    const deliveryOption = document.querySelector("input[name='payment_status'][value='Delivery']");
+    deliveryField.style.display = deliveryOption.checked ? "block" : "none";
+}
 </script>
 {% endblock %}
-

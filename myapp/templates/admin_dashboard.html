@@ -12,14 +12,14 @@
     flex-wrap: wrap;
     margin-bottom: 25px;
 }
-
 .dashboard-header h2 {
     color: #0a0b0b;
     font-size: 1.8em;
 }
 
-/* ===== Buttons ===== */
+/* ===== Top Buttons ===== */
 .btn {
+    display: inline-block;
     background-color: #96e0a7;
     color: #fff;
     padding: 10px 18px;
@@ -27,10 +27,14 @@
     border-radius: 8px;
     cursor: pointer;
     text-decoration: none;
-    transition: 0.3s;
+    transition: background 0.3s, transform 0.2s;
 }
-.btn:hover { background-color: #218838; }
+.btn:hover {
+    background-color: #218838;
+    transform: scale(1.05);
+}
 
+/* ===== Dropdown Menu ===== */
 .dropdown {
     position: relative;
     display: inline-block;
@@ -41,9 +45,9 @@
     right: 0;
     background-color: #f1f1f1;
     min-width: 180px;
-    box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
     border-radius: 8px;
-    z-index: 1;
+    z-index: 10;
 }
 .dropdown-content a {
     color: #333;
@@ -51,22 +55,22 @@
     display: block;
     text-decoration: none;
 }
-.dropdown-content a:hover { background-color: #e2e2e2; }
-.dropdown:hover .dropdown-content { display: block; }
+.dropdown-content a:hover {
+    background-color: #e2e2e2;
+}
+.dropdown:hover .dropdown-content {
+    display: block;
+}
 
 /* ===== Tables ===== */
-.table-container { margin-bottom: 40px; }
+.table-container {
+    margin-bottom: 40px;
+}
 .table-container h3 {
     margin-bottom: 15px;
     font-size: 1.3em;
     color: #28a745;
 }
-.table th, .table td {
-    padding: 12px;
-    border: 1px solid #ddd;
-    text-align: left;
-}
-
 .table {
     width: 100%;
     border-collapse: collapse;
@@ -79,44 +83,76 @@
     border: 1px solid #ddd;
     text-align: left;
 }
-.table th { background-color: #7fff6b; color: #000; }
-.table tr:nth-child(even) { background-color: #f0f8f0; }
-.table tr:hover { background-color: #d4edda; }
-
-/* ===== Responsive ===== */
-@media(max-width: 768px) {
-    .dashboard-header { flex-direction: column; align-items: flex-start; gap: 10px; }
-    .table th, .table td { font-size: 0.9em; padding: 8px; }
+.table th {
+    background-color: #7fff6b;
+    color: #000;
+}
+.table tr:nth-child(even) {
+    background-color: #f0f8f0;
+}
+.table tr:hover {
+    background-color: #d4edda;
 }
 
-/* ===== Action Buttons ===== */
+/* ===== Action Buttons (Edit, etc.) ===== */
 .action-btn {
     display: inline-block;
-    background-color: #2563eb; /* nice blue */
-    color: white;
+    background-color: #2563eb !important;
+    color: #fff !important;
     padding: 6px 12px;
     border-radius: 6px;
     font-size: 0.9em;
     font-weight: 600;
     text-decoration: none;
     transition: background 0.3s, transform 0.2s;
+    position: relative;
+    z-index: 5;
 }
 .action-btn:hover {
-    background-color: #1d4ed8;
+    background-color: #1d4ed8 !important;
     transform: scale(1.05);
+}
+
+/* ===== Delete Buttons ===== */
+.delete-btn {
+    background-color: #dc3545 !important;
+    color: #fff !important;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s;
+}
+.delete-btn:hover {
+    background-color: #a71d2a !important;
+    transform: scale(1.05);
+}
+
+/* ===== Responsive ===== */
+@media(max-width: 768px) {
+    .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    .table th, .table td {
+        font-size: 0.9em;
+        padding: 8px;
+    }
 }
 </style>
 
 <div class="dashboard-header">
     <h2>Brookelands Water and Gas - Admin Dashboard</h2>
-
     <div class="header-actions">
-        <!-- Sales Excel -->
-       <a href="{% url 'sales_report' %}" class="btn" style="margin-right:10px;">
-    📊 View Sales Report
-</a>
-
-        <!-- Expense Dropdown -->
+        <a href="{% url 'sales_report' %}" class="btn" style="margin-right:10px;">
+            📊 View Sales Report
+        </a>
+        {% if user.is_staff or user.is_superuser %}
+        <a href="{% url 'user_dashboard' %}" class="btn" style="margin-right:10px; background-color:#007bff;">
+            👤 User Dashboard
+        </a>
+        {% endif %}
         <div class="dropdown">
             <button>💰 Expenses</button>
             <div class="dropdown-content">
@@ -145,6 +181,7 @@
                     <th>Price (KSh)</th>
                     <th>Date</th>
                     <th>Payment Method</th>
+                    <th>Delivery Place</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -160,25 +197,25 @@
                     <td>{{ sale.price|floatformat:0|intcomma }}</td>
                     <td>{{ sale.date|date:"d/m/y" }}</td>
                     <td>{{ sale.payment_method }} ({{ sale.payment_status }})</td>
+                    <td>{{ sale.delivery_place }}</td>
                     <td>
                         <a href="{% url 'edit_sale' sale.id %}" class="action-btn">✏️ Edit</a>
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="10" class="text-center">No sales found.</td>
+                    <td colspan="11" class="text-center">No sales found.</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
         <button type="submit" 
                 onclick="return confirm('Are you sure you want to delete the selected sales?')" 
-                style="margin-top:15px; background:#dc3545; color:#fff; border:none; padding:10px 20px; border-radius:8px; cursor:pointer;">
+                class="delete-btn" style="margin-top:15px;">
             🗑️ Delete Selected Sales
         </button>
     </form>
 </div>
-
 
 <!-- ===== Expenses Table ===== -->
 <div class="table-container">
@@ -231,7 +268,7 @@
         </table>
         <button type="submit" 
                 onclick="return confirm('Are you sure you want to delete the selected expenses?')" 
-                style="margin-top:15px; background:#dc3545; color:#fff; border:none; padding:10px 20px; border-radius:8px; cursor:pointer;">
+                class="delete-btn" style="margin-top:15px;">
             🗑️ Delete Selected Expenses
         </button>
     </form>
