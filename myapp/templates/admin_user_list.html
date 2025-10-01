@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}User List{% endblock %}
+
+{% block content %}
+<h2>👥 All Users</h2>
+
+<table border="1" cellpadding="6" cellspacing="0">
+    <tr>
+        <th>ID</th>
+        <th>Username</th>
+        <th>Email</th>
+        <th>Dashboard</th>
+    </tr>
+    {% for user in users %}
+    <tr>
+        <td>{{ user.id }}</td>
+        <td>{{ user.username }}</td>
+        <td>{{ user.email }}</td>
+        <td>
+            <a href="{% url 'admin_user_dashboard' user.id %}">View Dashboard</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

@@ -138,7 +138,8 @@ h3::before { content: "✨ "; }
 
 <div class="dashboard-container">
     <h2>Brookelands Sales System</h2>
-    <h3>Welcome, {{ user.username }}</h3>
+    <h3>Welcome, {{ target_user.username|default:user.username }}</h3>
+
 
     {% if messages %}
         {% for message in messages %}

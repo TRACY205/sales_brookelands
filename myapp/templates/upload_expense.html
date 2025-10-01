@@ -5,98 +5,46 @@
 <style>
 /* ===== Upload Container ===== */
 .upload-container {
-    max-width: 600px;
+    max-width: 650px;
     margin: 50px auto;
     padding: 30px;
-    background: #e9f7ef;
+    background: #f1f9f5;
     border-radius: 20px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
     transition: transform 0.2s ease;
+    font-family: 'Roboto', Arial, sans-serif;
 }
-
-.upload-container:hover {
-    transform: scale(1.01);
-}
-
-.upload-container h2 {
-    text-align: center;
-    color: #28a745;
-    margin-bottom: 25px;
-    font-size: 2em;
-    font-family: 'Comic Sans MS', cursive;
-}
+.upload-container:hover { transform: scale(1.01); }
+.upload-container h2 { text-align: center; color: #28a745; margin-bottom: 25px; font-size: 2em; font-weight: bold; }
 
 /* ===== Form Styling ===== */
-.upload-container form {
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-}
-
-.upload-container label {
-    font-weight: 600;
-}
-
-.upload-container input[type="file"] {
-    padding: 12px;
-    border-radius: 12px;
-    border: 1px solid #ccc;
-    cursor: pointer;
-}
-
+.upload-container form { display: flex; flex-direction: column; gap: 18px; }
+.upload-container label { font-weight: 600; }
+.upload-container input[type="file"] { padding: 12px; border-radius: 12px; border: 1px solid #ccc; cursor: pointer; }
 .upload-container button, .back-btn {
-    padding: 14px;
-    background: #28a745;
-    color: #fff;
-    border: none;
-    border-radius: 50px;
-    font-weight: bold;
-    font-size: 1.05em;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    text-align: center;
-    text-decoration: none;
+    padding: 14px; background: #28a745; color: #fff; border: none; border-radius: 50px;
+    font-weight: bold; font-size: 1.05em; cursor: pointer; transition: all 0.3s ease;
+    text-align: center; text-decoration: none;
 }
-
-.upload-container button:hover, .back-btn:hover {
-    background-color: #218838;
-    transform: scale(1.05);
-}
+.upload-container button:hover, .back-btn:hover { background-color: #218838; transform: scale(1.05); }
 
 /* ===== Messages ===== */
-.message {
-    padding: 12px;
-    margin-bottom: 20px;
-    border-radius: 12px;
-    text-align: center;
-    font-size: 0.95em;
-}
-
+.message { padding: 12px; margin-bottom: 20px; border-radius: 12px; text-align: center; font-size: 0.95em; }
 .message.success { background-color: #d4edda; color: #155724; border: 1px solid #155724; }
 .message.error { background-color: #f8d7da; color: #721c24; border: 1px solid #721c24; }
 
+/* ===== Info Note ===== */
+.note-box { margin-top: 20px; padding: 15px; border-left: 5px solid #28a745; background: #e8f5e9; border-radius: 10px; font-size: 0.9em; }
+.note-box h4 { margin-bottom: 8px; font-size: 1.1em; color: #155724; }
+
 /* ===== Back Button ===== */
-.back-btn {
-    display: inline-block;
-    margin-top: 15px;
-    width: 100%;
-}
+.back-btn { display: inline-block; margin-top: 15px; width: 100%; }
 
 /* ===== Responsive ===== */
 @media (max-width: 768px) {
-    .upload-container {
-        padding: 20px;
-        margin: 30px auto;
-    }
-
-    .upload-container h2 {
-        font-size: 1.7em;
-    }
-
-    .upload-container button, .back-btn {
-        font-size: 1em;
-        padding: 12px;
-    }
+    .upload-container { padding: 20px; margin: 30px auto; }
+    .upload-container h2 { font-size: 1.7em; }
+    .upload-container button, .back-btn { font-size: 1em; padding: 12px; }
 }
 </style>
 
@@ -119,6 +67,22 @@
         <input type="file" name="file" accept=".xlsx,.xls,.csv" required>
         <button type="submit">✅ Upload</button>
     </form>
+
+    <!-- Info box about required columns -->
+    <div class="note-box">
+        <h4>📌 Required Columns in File:</h4>
+        <ul>
+            <li>R. No</li>
+            <li>Date</li>
+            <li>Paid To</li>
+            <li>Charges A/c</li>
+            <li>Description</li>
+            <li>Received Amnt</li>
+            <li>Bank charges</li>
+            <li>Amount Paid</li>
+            <li>C. Balance</li>
+        </ul>
+    </div>
 
     <!-- Back to dashboard -->
     <a href="{% url 'admin_dashboard' %}" class="back-btn">⬅ Back to Dashboard</a>

@@ -3,88 +3,80 @@
 
 {% block content %}
 <style>
-/* Container */
 .register-container {
     max-width: 400px;
     margin: 80px auto;
-    padding: 20px;
-    border: 1px solid #ddd;
-    border-radius: 10px;
+    padding: 35px 30px;
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 12px 25px rgba(0,0,0,0.15);
     text-align: center;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    background-color: #fff;
-}
-
-/* Headings */
-.register-container h2 {
-    margin-bottom: 20px;
 }
 
 /* Input fields */
-.register-input {
+.register-container input {
     width: 100%;
-    padding: 10px;
-    margin-bottom: 10px;
-    border-radius: 5px;
+    padding: 12px;
+    margin: 10px 0;
+    border-radius: 50px;
     border: 1px solid #ccc;
-    box-sizing: border-box;
 }
 
-/* Submit button */
-.register-button {
+/* Buttons */
+.register-container button {
     width: 100%;
-    padding: 10px;
-    background-color: #4CAF50;
-    color: white;
+    padding: 12px;
+    border-radius: 50px;
     border: none;
-    border-radius: 5px;
     cursor: pointer;
+    background-color: #007bff;
+    color: white;
+    font-size: 16px;
+    margin-top: 10px;
 }
+.register-container button:hover { background-color: #0056b3; }
 
-.register-button:hover {
-    background-color: #45a049;
+/* Back button */
+.back-button {
+    background-color: #b8eae0;
+    color: #000;
 }
+.back-button:hover { background-color: #7add94; }
 
-/* Messages */
+/* Flash messages */
 .message {
     margin-bottom: 15px;
-    font-size: 0.95em;
-    text-align: left;
+    padding: 10px;
+    border-radius: 10px;
+    text-align: center;
 }
-
-.message.error {
-    color: red;
-}
-
-.message.success {
-    color: green;
-}
-
-/* Links */
-.register-container p a {
-    text-decoration: none;
-    color: #4CAF50;
-}
+.message.error { background-color: #f8d7da; color: #721c24; }
+.message.success { background-color: #d4edda; color: #155724; }
 </style>
 
 <div class="register-container">
-    <h2>Create Account</h2>
+    <h2>📝 Create New Account</h2>
 
+    <!-- Flash messages -->
     {% if messages %}
         {% for message in messages %}
-            <p class="message {% if message.tags %}{{ message.tags }}{% endif %}">{{ message }}</p>
+            <p class="message {{ message.tags }}">{{ message }}</p>
         {% endfor %}
     {% endif %}
 
-    <form method="post">
+    <!-- Registration Form -->
+    <form method="post" action="{% url 'register' %}">
         {% csrf_token %}
-        <input type="text" name="username" class="register-input" placeholder="Username" required>
-        <input type="password" name="password1" class="register-input" placeholder="Password" required>
-        <input type="password" name="password2" class="register-input" placeholder="Confirm Password" required>
-        <button type="submit" class="register-button">Register</button>
+        <input type="text" name="username" placeholder="Username" required>
+        <input type="email" name="email" placeholder="Email" required>
+        <input type="password" name="password1" placeholder="Password" required>
+        <input type="password" name="password2" placeholder="Confirm Password" required>
+        <button type="submit">Register</button>
     </form>
 
-    <p style="margin-top:15px;">Already have an account? <a href="{% url 'login' %}?type=user">Login here</a></p>
+    <!-- Back to Login -->
+    <a href="{% url 'login' %}">
+        <button type="button" class="back-button">🔑 Back to Login</button>
+    </a>
 </div>
 {% endblock %}
-

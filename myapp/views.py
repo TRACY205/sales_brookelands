@@ -128,7 +128,7 @@ def user_dashboard(request):
         total_price = item_price * Decimal(quantity)
 
         Sale.objects.create(
-            user=request.user,
+            user=request.user,  # still track who made the order
             category=category,
             item=item,
             quantity=int(quantity),
@@ -140,7 +140,8 @@ def user_dashboard(request):
         messages.success(request, f"✅ Order submitted successfully! {item} - {quantity} @ {item_price} = {total_price}")
         return redirect("user_dashboard")
 
-    sales = Sale.objects.filter(user=request.user).order_by("-id")
+    # ✅ show all sales, not just current user's
+    sales = Sale.objects.all().order_by("-id")
 
     return render(request, "user_dashboard.html", {
         "sales": sales,
@@ -156,8 +157,8 @@ def admin_dashboard(request):
         messages.error(request, "🚫 Unauthorized access.")
         return redirect("user_dashboard")
 
-    # Admin expenses (latest first by ID)
-    expenses = Expense.objects.all().order_by("-id")
+    # Admin expenses (latest first by receipt number)
+    expenses = Expense.objects.all().order_by("-receipt_no")
     total_expenses = expenses.aggregate(total=Sum("amount_paid"))["total"] or 0
 
     # User sales/orders (latest first by ID)
@@ -177,110 +178,122 @@ def admin_dashboard(request):
 
 
 
+from django.shortcuts import render
+from django.contrib import messages
+import pandas as pd
+from decimal import Decimal, InvalidOperation
+from .models import Expense
 
+def safe_decimal(value):
+    try:
+        if pd.isna(value) or value == '':
+            return None
+        return Decimal(str(value))
+    except (InvalidOperation, TypeError, ValueError):
+        return None
 
-# --------------------------
-# Add sale (user)
-# --------------------------
-from decimal import Decimal
+def safe_date(value):
+    if pd.isna(value) or value == '':
+        return None
+    if isinstance(value, pd.Timestamp):
+        return value.date()
+    try:
+        # dayfirst=True ensures dd/mm/yyyy is interpreted correctly
+        return pd.to_datetime(value, dayfirst=True).date()
+    except Exception:
+        return None
 
-@login_required
-def add_sale(request):
-    if request.method == "POST":
-        category = request.POST.get("category")
-        item = request.POST.get("item")
-        quantity = request.POST.get("quantity")
-        payment_method = request.POST.get("payment_method")
+def upload_expense(request):
+    if request.method == 'POST':
+        uploaded_file = request.FILES.get('file')
+        if not uploaded_file:
+            messages.error(request, "⚠ No file selected!")
+            return render(request, 'upload_expense.html')
 
         try:
-            quantity = int(quantity)
-        except:
-            quantity = 0
+            # Read CSV or Excel
+            if uploaded_file.name.endswith('.csv'):
+                df = pd.read_csv(uploaded_file)
+            else:
+                df = pd.read_excel(uploaded_file)
 
-        unit_price = PRICE_LIST.get(item)
-        if category and item and quantity > 0 and unit_price is not None and payment_method:
-            total_price = Decimal(unit_price) * quantity
+            # Clean column names
+            df.columns = df.columns.str.replace('\xa0', ' ').str.strip()
 
-            # ✅ Store clean decimal value in DB
-            Sale.objects.create(
-                user=request.user,
-                category=category,
-                item=item,
-                quantity=quantity,
-                price=total_price,
-                payment_method=payment_method
-            )
-            return redirect("user_dashboard")
+            # Map CSV columns -> model fields
+            COLUMN_MAP = {
+                'R. No': 'receipt_no',
+                'Date': 'date',
+                'Paid To': 'paid_to',
+                'Charges A/c': 'charges_account',
+                'Description': 'description',
+                'Received Amnt': 'received_amount',
+                'Bank charges': 'bank_charges',
+                'Amount Paid': 'amount_paid',
+                'C. Balance': 'cumulative_balance',
+            }
 
-    return render(request, "add_sale.html", {"PRICE_LIST": PRICE_LIST})
+            decimal_fields = {'received_amount', 'bank_charges', 'amount_paid', 'cumulative_balance'}
+
+            created = 0
+            skipped = 0
+            for _, row in df.iterrows():
+                data = {}
+                for csv_col, model_field in COLUMN_MAP.items():
+                    value = row.get(csv_col, None)
+                    if model_field in decimal_fields:
+                        value = safe_decimal(value)
+                    elif model_field == 'date':
+                        value = safe_date(value)
+                    data[model_field] = value
+
+                # Skip rows with missing required fields
+                if not data.get('amount_paid') or not data.get('date') or not data.get('paid_to'):
+                    skipped += 1
+                    continue
+
+                Expense.objects.create(**data)
+                created += 1
+
+            messages.success(request, f"✅ Uploaded {created} rows. Skipped {skipped} rows.")
+        except Exception as e:
+            messages.error(request, f"⚠ Error processing file: {str(e)}")
+
+    return render(request, 'upload_expense.html')
 
 
-# --------------------------
-# Add expense (admin)
-# --------------------------
+
+
+
+
+
 @login_required
 def add_expense(request):
     if request.method == "POST":
+        receipt_no = request.POST.get("receipt_no")
         date = request.POST.get("date")
         paid_to = request.POST.get("paid_to")
-        charged_to = request.POST.get("charged_to")
+        charges_account = request.POST.get("charged_to")
         description = request.POST.get("description")
-        receipt_no = request.POST.get("receipt_no")
-        sponsor = request.POST.get("sponsor")
-        amount_injected = request.POST.get("amount_injected")
-        amount_paid = request.POST.get("amount_paid")
-        bank_charges = request.POST.get("bank_charges")
-        running_balance = request.POST.get("running_balance")
-
-        if not date or not paid_to or not charged_to or not description or not amount_injected or not amount_paid:
-            messages.error(request, "Please fill all required fields.")
-            return redirect("add_expense")
-
-        try:
-            amount_injected = float(amount_injected)
-            amount_paid = float(amount_paid)
-            bank_charges = float(bank_charges) if bank_charges else 0
-            running_balance = float(running_balance) if running_balance else 0
-        except ValueError:
-            messages.error(request, "Amounts must be numbers.")
-            return redirect("add_expense")
+        received_amount = request.POST.get("received_amount") or 0
+        bank_charges = request.POST.get("bank_charges") or 0
+        amount_paid = request.POST.get("amount_paid") or 0
+        closing_balance = request.POST.get("running_balance") or 0
 
         Expense.objects.create(
-            user=request.user,
+            receipt_no=receipt_no,
             date=date,
             paid_to=paid_to,
-            charged_to=charged_to,
+            charges_account=charges_account,
             description=description,
-            receipt_no=receipt_no,
-            sponsor=sponsor,
-            amount_injected=amount_injected,
-            amount_paid=amount_paid,
+            received_amount=received_amount,
             bank_charges=bank_charges,
-            running_balance=running_balance
+            amount_paid=amount_paid,
+            closing_balance=closing_balance,
         )
-
-        messages.success(request, "Expense added successfully!")
         return redirect("admin_dashboard")
 
     return render(request, "add_expense.html")
-
-# --------------------------
-# Upload expenses (Excel/CSV)
-# --------------------------
-@login_required
-def upload_expense(request):
-    if request.method == "POST" and request.FILES.get("file"):
-        file = request.FILES["file"]
-        # handle Excel/CSV upload logic here
-        messages.success(request, "Expenses uploaded successfully!")
-        return redirect("admin_dashboard")
-    return render(request, "upload_expense.html")
-
-# --------------------------
-# Admin PDF reports
-# --------------------------
-# myapp/views.py
-
 
 
 
@@ -622,3 +635,34 @@ def delete_expenses(request):
         else:
             messages.error(request, "No expenses were selected for deletion.")
     return redirect("admin_dashboard")   # ✅ go back to admin dashboard    here?
+
+
+
+@login_required
+def add_sale(request):
+    if request.method == "POST":
+        category = request.POST.get("category")
+        item = request.POST.get("item")
+        quantity = request.POST.get("quantity")
+        payment_method = request.POST.get("payment_method")
+
+        try:
+            quantity = int(quantity)
+        except:
+            quantity = 0
+
+        unit_price = PRICE_LIST.get(item)
+        if category and item and quantity > 0 and unit_price is not None and payment_method:
+            total_price = Decimal(unit_price) * quantity
+
+            Sale.objects.create(
+                user=request.user,
+                category=category,
+                item=item,
+                quantity=quantity,
+                price=total_price,
+                payment_method=payment_method,
+            )
+            return redirect("user_dashboard")
+
+    return render(request, "add_sale.html", {"PRICE_LIST": PRICE_LIST})

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Add Stock{% endblock %}
+
+{% block content %}
+<div style="max-width:500px; margin:auto; padding:20px; border:1px solid #ddd; border-radius:8px;">
+    <h2 style="text-align:center; margin-bottom:20px;">Add Stock</h2>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <div style="margin-bottom:15px;">
+            <label for="name">Item Name:</label><br>
+            <input type="text" id="name" name="name" required style="width:100%; padding:8px;">
+        </div>
+
+        <div style="margin-bottom:15px;">
+            <label for="quantity">Quantity:</label><br>
+            <input type="number" id="quantity" name="quantity" required style="width:100%; padding:8px;">
+        </div>
+
+        <button type="submit" 
+                style="width:100%; padding:10px; background:#28a745; color:#fff; border:none; border-radius:5px; cursor:pointer;">
+            ➕ Add Stock
+        </button>
+    </form>
+
+    <div style="text-align:center; margin-top:15px;">
+        <a href="{% url 'stock_list' %}" style="text-decoration:none; color:#007bff;">← Back to Stock List</a>
+    </div>
+</div>
+{% endblock %}

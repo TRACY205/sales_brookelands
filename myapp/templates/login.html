@@ -36,7 +36,7 @@
 }
 .login-container button:hover { background-color: #45a049; }
 
-/* Back button */
+/* Back/Register buttons */
 .back-button {
     background-color: #b8eae0;
     color: #000;
@@ -75,6 +75,11 @@
     <!-- Back to Landing Page -->
     <a href="{% url 'landing' %}">
         <button type="button" class="back-button">🏠 Back to Landing Page</button>
+    </a>
+
+    <!-- Register New User -->
+    <a href="{% url 'register' %}">
+        <button type="button" class="back-button">➕ Register New User</button>
     </a>
 </div>
 {% endblock %}

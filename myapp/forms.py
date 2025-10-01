@@ -1,5 +1,5 @@
 from django import forms
-from .models import Sale, Expense
+from .models import Expense, Sale
 
 class ExpenseForm(forms.ModelForm):
     class Meta:
@@ -7,17 +7,17 @@ class ExpenseForm(forms.ModelForm):
         fields = [
             "date",
             "paid_to",
-            "charged_to",
+            "charges_account",
             "description",
-            "receipt_no",
-            "sponsor",
-            "amount_injected",
-            "amount_paid",
+            "received_amount",
             "bank_charges",
+            "amount_paid",
+            "cumulative_balance",
         ]
         widgets = {
             "date": forms.DateInput(attrs={"type": "date"}),
         }
+
 
 class SaleForm(forms.ModelForm):
     PAYMENT_STATUS_CHOICES = [
@@ -33,7 +33,7 @@ class SaleForm(forms.ModelForm):
     )
 
     class Meta:
-        model = Sale
+        model = Sale  # ⚠ Must be Sale, not Expense
         fields = [
             "category",
             "item",
@@ -41,7 +41,7 @@ class SaleForm(forms.ModelForm):
             "price",
             "payment_method",
             "payment_status",
-            "delivery_place",  # include if model has it
+            "delivery_place",  # only if model has it
             "date",
         ]
         widgets = {
