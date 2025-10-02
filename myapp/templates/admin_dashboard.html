@@ -230,39 +230,37 @@
     <form method="post" action="{% url 'delete_expenses' %}">
         {% csrf_token %}
         <table class="table">
-            <thead>
-                <tr>
-                    <th>Select</th>
-                    <th>ID</th>
-                    <th>Date</th>
-                    <th>Paid To</th>
-                    <th>Charged To</th>
-                    <th>Description</th>
-                    <th>Receipt No</th>
-                    <th>Sponsor</th>
-                    <th>Amount Injected</th>
-                    <th>Amount Paid</th>
-                    <th>Bank Charges</th>
-                    <th>Running Balance</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for exp in expenses %}
-                <tr>
-                    <td><input type="checkbox" name="selected_expenses" value="{{ exp.id }}"></td>
-                    <td>{{ exp.id }}</td>
-                    <td>{{ exp.date|date:"d/m/Y" }}</td>
-                    <td>{{ exp.paid_to }}</td>
-                    <td>{{ exp.charged_to }}</td>
-                    <td>{{ exp.description }}</td>
-                    <td>{{ exp.receipt_no }}</td>
-                    <td>{{ exp.sponsor }}</td>
-                    <td>{{ exp.amount_injected|floatformat:0|intcomma }}</td>
-                    <td>{{ exp.amount_paid|floatformat:0|intcomma }}</td>
-                    <td>{{ exp.bank_charges|floatformat:0|intcomma }}</td>
-                    <td>{{ exp.running_balance|floatformat:0|intcomma }}</td>
-                    <td>
+    <thead>
+        <tr>
+            <th>Select</th>
+            <th>Receipt No</th>
+            <th>Date</th>
+            <th>Paid To</th>
+            <th>Charges A/c</th>
+            <th>Description</th>
+            <th>Received Amount</th>
+            <th>Amount Paid</th>
+            <th>Bank Charges</th>
+            <th>Cumulative Balance</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for exp in expenses %}
+        <tr>
+            <td><input type="checkbox" name="selected_expenses" value="{{ exp.receipt_no }}"></td>
+            <td>{{ exp.receipt_no }}</td>
+            <td>{{ exp.date|date:"d/m/Y" }}</td>
+            <td>{{ exp.paid_to }}</td>
+            <td>{{ exp.charges_account }}</td>
+            <td>{{ exp.description }}</td>
+            <td>{{ exp.received_amount|floatformat:0|intcomma }}</td>
+            <td>{{ exp.amount_paid|floatformat:0|intcomma }}</td>
+            <td>{{ exp.bank_charges|floatformat:0|intcomma }}</td>
+            <td>{{ exp.cumulative_balance|floatformat:0|intcomma }}</td>
+            <td>
+
+        
                         <a href="{% url 'edit_expense' exp.id %}" class="action-btn">✏️ Edit</a>
                     </td>
                 </tr>

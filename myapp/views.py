@@ -306,6 +306,10 @@ from reportlab.pdfgen import canvas
 from .models import Expense, Sale
 
 # ------------------- Excel Expenses -------------------
+from django.http import HttpResponse
+from openpyxl import Workbook
+from .models import Expense
+
 def admin_expenses_excel(request):
     response = HttpResponse(
         content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
@@ -316,57 +320,53 @@ def admin_expenses_excel(request):
     ws = wb.active
     ws.title = "Expenses Report"
 
+    # Exact headers
     headers = [
-        "Date", "Paid To", "Charged To", "Description",
-        "Receipt No", "Sponsor", "Amount Injected",
-        "Amount Paid", "Bank Charges", "Running Balance"
+        "Receipt No", "Date", "Paid To", "Charges A/c",
+        "Description", "Received Amount", "Amount Paid",
+        "Bank Charges", "Cumulative Balance"
     ]
     ws.append(headers)
 
     expenses = Expense.objects.all().order_by("date")
 
-    running_balance = 0
-    total_injected = 0
     total_paid = 0
-    total_charges = 0
+    total_balance = 0
 
     for exp in expenses:
-        injected = getattr(exp, 'amount_injected', 0) or 0
-        paid = getattr(exp, 'amount_paid', 0) or 0
-        charges = getattr(exp, 'bank_charges', 0) or 0
+        received_value = exp.received_amount if exp.received_amount is not None else ""
 
-        running_balance += injected - paid - charges
-        total_injected += injected
-        total_paid += paid
-        total_charges += charges
+        # Add row
         ws.append([
-    exp.date.strftime("%d/%m/%y") if exp.date else "",  # <-- comma added here
-    getattr(exp, 'paid_to', ''),
-    getattr(exp, 'charged_to', ''),
-    getattr(exp, 'description', ''),
-    getattr(exp, 'receipt_no', ''),
-    getattr(exp, 'sponsor', ''),
-    float(injected),
-    float(paid),
-    float(charges),
-    float(running_balance),
-])
+            exp.receipt_no or "",
+            exp.date.strftime("%d/%m/%Y") if exp.date else "",
+            exp.paid_to or "",
+            exp.charges_account or "",
+            exp.description or "",
+            received_value,
+            float(exp.amount_paid or 0),
+            float(exp.bank_charges or 0),
+            float(exp.cumulative_balance or 0),
+        ])
+
+        # Accumulate totals
+        total_paid += float(exp.amount_paid or 0)
+        total_balance += float(exp.cumulative_balance or 0)
+
+    # Add totals row
+    ws.append([
+        "", "", "", "", "TOTALS", "", 
+        total_paid, "", total_balance
+    ])
+
+    wb.save(response)
+    return response
+
 
 
         
   
         
-
-    ws.append([
-        "", "", "", "TOTALS", "", "",
-        float(total_injected),
-        float(total_paid),
-        float(total_charges),
-        float(running_balance),
-    ])
-
-    wb.save(response)
-    return response
 
 # ------------------- Excel Sales with Totals by Payment Method -------------------
 from django.shortcuts import render
